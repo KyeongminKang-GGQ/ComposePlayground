@@ -11,8 +11,8 @@ jobs:
 
     steps:
       - name: PR merged
-        if: ${{ github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'feature/' }}
-        run: echo "::set-output name=name::$(echo ${{ github.event.pull_request.head.ref }})
+        if: ${{ github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'feature/') }}
+        run: echo "::set-output name=name::$(echo ${{ github.event.pull_request.head.ref }})"
         id: extract_branch_name
       - name: Delete branch
         uses: dawidd6/action-delete-branch@v3
