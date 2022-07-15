@@ -30,6 +30,8 @@ jobs:
             git pull
             git merge --no-ff ${{ github.ref_name }} -m "Auto-merge from ${{ github.ref_name }} to master"
             git push
+            git tag ${{ steps.extract_version_name.outputs.version }}
+            git push origin ${{ steps.extract_version_name.outputs.version }}
 
       - name: Delete branch
         uses: dawidd6/action-delete-branch@v3
