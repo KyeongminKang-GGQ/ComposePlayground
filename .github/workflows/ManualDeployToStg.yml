@@ -21,9 +21,9 @@ jobs:
       - name: 버전 정보 추출
         run: |
           if [[ ${{ inputs.identifier }} != '' ]]; then
-            echo "##[set-output name=version;]$(echo '${{ github.ref_name }}' | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')-${{ inputs.identifier }}$(echo '${{ github.ref_name }}' | egrep -o '\+[0-9]{6}')"
+            echo "##[set-output name=version;]$($(echo '${{ github.ref_name }}' | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')-${{ inputs.identifier }}$(echo '${{ github.ref_name }}' | egrep -o '\+[0-9]{6}'))"
           else
-            echo "##[set-output name=version;]$(echo '${{ github.ref_name }}' | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')$(echo '${{ github.ref_name }}' | egrep -o '\+[0-9]{6}')"
+            echo "##[set-output name=version;]$($(echo '${{ github.ref_name }}' | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')$(echo '${{ github.ref_name }}' | egrep -o '\+[0-9]{6}'))"
           fi
         id: extract_version_name
       - name: Print Tag
