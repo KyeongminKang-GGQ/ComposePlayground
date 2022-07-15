@@ -35,6 +35,9 @@ jobs:
             git pull
             git merge --no-ff ${{ github.ref_name }} -m "Auto-merge from ${{ github.ref_name }} to master"
             git push
-            git branch -d ${{ github.ref_name }}
-            git branch -avv
-            git push -m "Remove ${{ github.ref_name }}"
+
+      - name: Delete branch
+        uses: dawidd6/action-delete-branch@v3
+        with:
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            branches: ${{ github.ref_name }}
