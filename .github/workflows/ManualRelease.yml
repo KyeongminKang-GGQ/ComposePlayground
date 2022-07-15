@@ -13,8 +13,6 @@ jobs:
         id: extract_version_name
       - name: Tag commit
         uses: tvdias/github-tagger@v0.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ steps.extract_version_name.outputs.version }}
