@@ -12,7 +12,7 @@ on:
 
 jobs:
   CheckBranch:
-    if: startsWith(${{ github.ref_name }}, 'release/') || startsWith(${{ github.ref_name }}, 'hotfix/')
+    if: ${{ startsWith(github.ref_name, 'release/') || startsWith(github.ref_name, 'hotfix/') }}
 
     runs-on: ubuntu-latest
 
