@@ -1,4 +1,4 @@
-name: ManualDeployToStg
+name: ManualDeployToPrd
 on:
   workflow_dispatch:
     inputs:
@@ -26,3 +26,16 @@ jobs:
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ steps.extract_version_name.outputs.version }}
+
+      - name: Set Git config
+        run: |
+            git config --local user.email "actions@github.com"
+            git config --local user.name "Github Actions"
+
+      - name: Merge to main
+        run: |
+            git fetch --unshallow
+            git checkout main
+            git pull
+            git merge --no-ff master -m "Auto-merge to master"
+            git push
