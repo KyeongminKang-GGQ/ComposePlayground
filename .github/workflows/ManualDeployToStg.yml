@@ -12,7 +12,7 @@ on:
 
 jobs:
   BuildAndDeployToStg:
-    if: ${{ inputs.environment }} == 'STG' && ${{ github.ref_name }}
+    if: ${{ inputs.environment }} == 'STG' && (startsWith(github.ref_name, 'release/) || startsWith(github.ref_name, 'hotfix/))
 
     runs-on: ubuntu-latest
 
