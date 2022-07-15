@@ -11,19 +11,8 @@ on:
         required: false
 
 jobs:
-  CheckBranch:
-    if: startsWith(${{ github.ref_name }}, 'release/') || startsWith(${{ github.ref_name }}, 'hotfix/')
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
-      - name: Print Branch Name
-        run: |
-          echo Print Branch Name: ${{ github.ref_name }}
-
   BuildAndDeployToStg:
-    if: ${{ inputs.environment }} == 'STG'
+    if: ${{ inputs.environment }} == 'STG' && (startsWith(${{ github.ref_name }}, 'release/') || startsWith(${{ github.ref_name }}, 'hotfix/'))
 
     runs-on: ubuntu-latest
 
