@@ -17,11 +17,6 @@ jobs:
       - name: Print Tag
         run: |
           echo ${{ steps.extract_version_name.outputs.version }}
-      - name: Tag commit
-        uses: tvdias/github-tagger@v0.0.1
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ steps.extract_version_name.outputs.version }}
 
       - name: Set Git config
         run: |
@@ -41,3 +36,11 @@ jobs:
         with:
             github_token: ${{ secrets.GITHUB_TOKEN }}
             branches: ${{ github.ref_name }}
+
+      - name: Release 생성
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.extract_version_name.outputs.version }}
+          release_name: ${{ steps.extract_version_name.outputs.version }}
