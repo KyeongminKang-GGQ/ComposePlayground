@@ -36,3 +36,4 @@ jobs:
             git merge --no-ff ${{ github.ref_name }} -m "Auto-merge from ${{ github.ref_name }} to master"
             git push
             git branch -d ${{ github.ref_name }}
+            git push
