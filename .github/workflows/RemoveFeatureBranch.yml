@@ -2,20 +2,15 @@ name: RemoveFeatureBranch
 
 on:
   pull_request:
-    branches:
-      - feature/**
     types:
       - closed
 
 jobs:
-  RemoveFeatureBranch:
-    if: github.event.pull_request.merged == true
-    
+  RemoveFeatureBranch:    
     runs-on: ubuntu-latest
 
     steps:
-      - name: Delete branch
-        uses: dawidd6/action-delete-branch@v3
-        with:
-            github_token: ${{ secrets.GITHUB_TOKEN }}
-            branches: ${{ github.ref_name }}
+      - name: trigger_event_type
+        env: 
+          GITHUB_EVENT: ${{ toJson(github.event.pull_request)}} 
+        run: echo $GITHUB_EVENT ${{ github.ref_name }}
