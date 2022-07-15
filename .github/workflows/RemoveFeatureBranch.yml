@@ -17,4 +17,4 @@ jobs:
         
       - name: PR merged
         if: github.event.pull_request.merged == true
-        run: echo ${{ github.ref_name }}
+        run: echo ${{ github.ref_name }} ${{ github.event.pull_request.head.ref }}
