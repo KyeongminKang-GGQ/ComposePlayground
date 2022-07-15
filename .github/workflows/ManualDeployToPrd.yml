@@ -4,7 +4,7 @@ on:
 
 jobs:
   BuildAndDeployToPrd:
-    if: ${{ inputs.identifier != '' && (startsWith(github.ref_name, 'release/') || startsWith(github.ref_name, 'hotfix/')) }}
+    if: ${{ startsWith(github.ref_name, 'release/') || startsWith(github.ref_name, 'hotfix/') }}
 
     runs-on: ubuntu-latest
 
@@ -33,5 +33,5 @@ jobs:
             git fetch --unshallow
             git checkout main
             git pull
-            git merge --no-ff master -m "Auto-merge to master"
+            git merge --no-ff ${{ github.ref_name }} -m "Auto-merge from ${{ github.ref_name }} to master"
             git push
