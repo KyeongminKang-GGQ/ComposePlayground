@@ -37,6 +37,19 @@ jobs:
             github_token: ${{ secrets.GITHUB_TOKEN }}
             branches: ${{ github.ref_name }}
 
+  ReleaseAndTag:
+    if: ${{ startsWith(github.ref_name, 'release/') || startsWith(github.ref_name, 'hotfix/') }}
+    needs: BuildAndDeployToPrd
+    runs-on: ubuntu-latest
+    steps:
+      - name: 버전 정보 추출
+        run: |
+          echo "::set-output name=version::$(echo '${{ github.ref_name }}' | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\+[0-9]{6}')"
+        id: extract_version_name
+      - name: Print Tag
+        run: |
+          echo ${{ steps.extract_version_name.outputs.version }}
+
       - name: Release 생성
         uses: actions/create-release@v1
         env:
