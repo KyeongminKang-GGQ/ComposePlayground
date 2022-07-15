@@ -18,7 +18,6 @@ jobs:
           echo ${{ steps.extract_version_name.outputs.version }}
 
       - name: Release & Tag commit
-        if: github.event.pull_request.merged == true
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
