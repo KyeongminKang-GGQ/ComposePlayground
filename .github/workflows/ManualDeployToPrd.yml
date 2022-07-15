@@ -48,7 +48,26 @@ jobs:
           ref: main
       - run: |
           echo  ${{ github.ref_name }}.${{ github.sha }}
-        
+          
+      - name: Get branch name
+        id: branch-name
+        uses: tj-actions/branch-names@v5.4
+
+      - name: Running on the default branch.
+        if: steps.branch-name.outputs.is_default == 'true'
+        run: |
+          echo "Running on default: ${{ steps.branch-name.outputs.current_branch }}"
+          
+      - name: Running on a pull request branch.
+        if: steps.branch-name.outputs.is_default == 'false'
+        run: |
+          echo "Running on pr: ${{ steps.branch-name.outputs.current_branch }}"
+          
+      - name: Running on a pull request branch. head_ref_branch
+        if: steps.branch-name.outputs.is_default == 'false'
+        run: |
+          echo "head_ref_branch on pr: ${{ steps.branch-name.outputs.head_ref_branch }}"
+
       - name: 정보 추출
         run: |
           echo  ${{ github.ref_name }}.${{ github.sha }}
