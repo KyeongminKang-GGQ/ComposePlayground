@@ -32,6 +32,15 @@ jobs:
             git push
             git tag ${{ steps.extract_version_name.outputs.version }}
             git push origin ${{ steps.extract_version_name.outputs.version }}
+            
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{steps.extract_version_name.outputs.version }}
+          release_name: ${{ steps.extract_version_name.outputs.version }}
 
       - name: Delete branch
         uses: dawidd6/action-delete-branch@v3
