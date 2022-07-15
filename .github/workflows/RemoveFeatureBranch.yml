@@ -10,11 +10,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: trigger_event_type
-        env: 
-          GITHUB_EVENT: ${{ toJson(github.event.pull_request)}} 
-        run: echo $GITHUB_EVENT ${{ github.ref_name }}
-        
       - name: PR merged
-        if: github.event.pull_request.merged == true
-        run: echo ${{ github.ref_name }} ${{ github.event.pull_request.head.ref }}
+        if: ${{ github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'feature/' }}
+        run: echo "::set-output name=name::$(echo ${{ github.event.pull_request.head.ref }})
+        id: extract_branch_name
+      - name: Delete branch
+        uses: dawidd6/action-delete-branch@v3
+        with:
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            branches: ${{ steps.extract_branch_name.outputs.name }}
