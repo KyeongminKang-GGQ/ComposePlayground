@@ -7,11 +7,8 @@ on:
         required: false
 
 jobs:
-  BuildAndDeployToStgInRelease:
-    if: ${{ inputs.identifier != '' && startsWith(github.ref_name, 'release/') }}
-
+  CreateTagForRelease:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2
 
@@ -32,11 +29,25 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ steps.extract_version_name.outputs.version }}
 
-  BuildAndDeployToStgInHotfix:
-    if: ${{ inputs.identifier != '' && startsWith(github.ref_name, 'hotfix/') }}
+  BuildAndDeployToStgAtReleaseBranch:
+    if: ${{ inputs.identifier != '' && startsWith(github.ref_name, 'release/') }}
+    needs: CreateTagForRelease
 
     runs-on: ubuntu-latest
 
+    steps:
+      # 실제로 서버 배포하는 Action 추가
+      - name: 서버 배포
+        run: |
+          echo Release Server
+
+      # 슬랙 배포 알람 Action 추가
+      - name: 슬랙 알람
+        run: |
+          echo Notification Server
+
+  CreateTagForHotfix:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
 
@@ -56,3 +67,21 @@ jobs:
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ steps.extract_version_name.outputs.version }}
+
+
+  BuildAndDeployToStgAtHotfixBranch:
+    if: ${{ inputs.identifier != '' && startsWith(github.ref_name, 'hotfix/') }}
+    needs: CreateTagForHotfix
+
+    runs-on: ubuntu-latest
+
+    steps:
+      # 실제로 서버 배포하는 Action 추가
+      - name: 서버 배포
+        run: |
+          echo Release Server
+
+      # 슬랙 배포 알람 Action 추가
+      - name: 슬랙 알람
+        run: |
+          echo Notification Server
