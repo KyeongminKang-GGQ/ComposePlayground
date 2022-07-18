@@ -8,6 +8,7 @@ on:
 
 jobs:
   CreateTagForRelease:
+    if: ${{ inputs.identifier != '' && startsWith(github.ref_name, 'release/') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -47,6 +48,7 @@ jobs:
           echo Notification Server
 
   CreateTagForHotfix:
+    if: ${{ inputs.identifier != '' && startsWith(github.ref_name, 'hotfix/') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
