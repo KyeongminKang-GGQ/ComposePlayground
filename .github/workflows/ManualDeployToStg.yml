@@ -30,6 +30,11 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ steps.extract_version_name.outputs.version }}
 
+      - name: Send slack if failed
+        if: ${{ failure() }}
+        run: |
+          echo "Build Fail"
+
   BuildAndDeployToStgAtReleaseBranch:
     if: ${{ inputs.identifier != '' && startsWith(github.ref_name, 'release/') }}
     needs: CreateTagForRelease
@@ -43,9 +48,15 @@ jobs:
           echo Release Server
 
       # 슬랙 배포 알람 Action 추가
-      - name: 슬랙 알람
+      - name: Send slack if failed
+        if: ${{ failure() }}
         run: |
-          echo Notification Server
+          echo "Build Fail"
+
+      - name: Send slack if completed
+        if: ${{ success() }}
+        run: |
+          echo "Build Success"
 
   CreateTagForHotfix:
     if: ${{ inputs.identifier != '' && startsWith(github.ref_name, 'hotfix/') }}
@@ -70,6 +81,11 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ steps.extract_version_name.outputs.version }}
 
+      - name: Send slack if failed
+        if: ${{ failure() }}
+        run: |
+          echo "Build Fail"
+
 
   BuildAndDeployToStgAtHotfixBranch:
     if: ${{ inputs.identifier != '' && startsWith(github.ref_name, 'hotfix/') }}
@@ -84,6 +100,12 @@ jobs:
           echo Release Server
 
       # 슬랙 배포 알람 Action 추가
-      - name: 슬랙 알람
+      - name: Send slack if failed
+        if: ${{ failure() }}
         run: |
-          echo Notification Server
+          echo "Build Fail"
+
+      - name: Send slack if completed
+        if: ${{ success() }}
+        run: |
+          echo "Build Success"
