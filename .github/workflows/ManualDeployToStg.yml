@@ -12,6 +12,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name : Test ref_name
+        run: |
+          echo ${{ github.ref_name, startsWith(github.ref_name, 'release/') }}
+
       # 실제로 서버 배포하는 Action 추가
       # 슬랙 배포 알람 Action 추가
 
@@ -50,6 +54,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
+
+      - name : Test ref_name
+        run: |
+            echo ${{ github.ref_name, startsWith(github.ref_name, 'release/') }}
 
       # 실제로 서버 배포하는 Action 추가
       # 슬랙 배포 알람 Action 추가
