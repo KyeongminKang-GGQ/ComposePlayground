@@ -14,16 +14,20 @@ jobs:
         run: |
           echo "::set-output name=version::$(echo '${{ github.ref_name }}' | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\+[0-9]{6}')"
         id: extract_version_name
-      - name: Print Tag
+
+      - if: ${{ steps.extract_branch_name.outputs.version != '' }}
+        name: Print Tag
         run: |
           echo ${{ steps.extract_version_name.outputs.version }}
 
-      - name: Set Git config
+      - if: ${{ steps.extract_branch_name.outputs.version != '' }}
+        name: Set Git config
         run: |
             git config --local user.email "actions@github.com"
             git config --local user.name "Github Actions"
 
-      - name: Merge to main
+      - if: ${{ steps.extract_branch_name.outputs.version != '' }}
+        name: Merge to main
         run: |
             git fetch --unshallow
             git checkout main
@@ -32,8 +36,9 @@ jobs:
             git push
             git tag ${{ steps.extract_version_name.outputs.version }}
             git push origin ${{ steps.extract_version_name.outputs.version }}
-            
-      - name: Create Release
+
+      - if: ${{ steps.extract_branch_name.outputs.version != '' }}
+        name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
@@ -42,7 +47,8 @@ jobs:
           tag_name: ${{steps.extract_version_name.outputs.version }}
           release_name: ${{ steps.extract_version_name.outputs.version }}
 
-      - name: Delete branch
+      - if: ${{ steps.extract_branch_name.outputs.version != '' }}
+        name: Delete branch
         uses: dawidd6/action-delete-branch@v3
         with:
             github_token: ${{ secrets.GITHUB_TOKEN }}
