@@ -43,10 +43,6 @@ jobs:
         name: Merge to main
         run: |
             git fetch --unshallow
-            git checkout develop
-            git pull
-            git merge --no-ff ${{ github.ref_name }} -m "Auto-merge from ${{ github.ref_name }} to develop"
-            git push
             git checkout main
             git pull
             git merge --no-ff ${{ github.ref_name }} -m "Auto-merge from ${{ github.ref_name }} to main"
