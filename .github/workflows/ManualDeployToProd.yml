@@ -42,7 +42,6 @@ jobs:
       - if: ${{ steps.extract_version_name.outputs.version != '' }}
         name: Merge to main
         run: |
-            git fetch --unshallow
             git checkout main
             git pull
             git merge --no-ff ${{ github.ref_name }} -m "Auto-merge from ${{ github.ref_name }} to main"
@@ -116,7 +115,6 @@ jobs:
       - if: ${{ steps.extract_version_name.outputs.version != '' }}
         name: Merge to main
         run: |
-          git fetch --unshallow
           git checkout main
           git pull
           git merge --no-ff ${{ github.ref_name }} -m "Auto-merge from ${{ github.ref_name }} to main"
