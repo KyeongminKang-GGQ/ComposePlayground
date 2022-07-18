@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  BuildAndDeployToProdInRelease:
+  BuildAndDeployToProdAtReleaseBranch:
     if: ${{ startsWith(github.ref_name, 'release/') }}
 
     runs-on: ubuntu-latest
@@ -34,6 +34,10 @@ jobs:
         name: Merge to main
         run: |
             git fetch --unshallow
+            git checkout develop
+            git pull
+            git merge --no-ff ${{ github.ref_name }} -m "Auto-merge from ${{ github.ref_name }} to develop"
+            git push
             git checkout main
             git pull
             git merge --no-ff ${{ github.ref_name }} -m "Auto-merge from ${{ github.ref_name }} to master"
@@ -58,7 +62,7 @@ jobs:
             github_token: ${{ secrets.GITHUB_TOKEN }}
             branches: ${{ github.ref_name }}
 
-  BuildAndDeployToProdInHotfix:
+  BuildAndDeployToProdAtHotfixBranch:
     if: ${{ startsWith(github.ref_name, 'hotfix/') }}
 
     runs-on: ubuntu-latest
@@ -89,6 +93,10 @@ jobs:
         name: Merge to main
         run: |
           git fetch --unshallow
+          git checkout develop
+          git pull
+          git merge --no-ff ${{ github.ref_name }} -m "Auto-merge from ${{ github.ref_name }} to develop"
+          git push
           git checkout main
           git pull
           git merge --no-ff ${{ github.ref_name }} -m "Auto-merge from ${{ github.ref_name }} to master"
