@@ -31,10 +31,11 @@ jobs:
           tag: ${{ steps.extract_version_name.outputs.version }}
 
       - name: Send slack
-        uses: ./github/workflows/NotifySlack
+        uses: github/workflows/NotifySlack@release/1.0.0+220725
         with:
           environment: "STG"
           version: ${{ steps.extract_version_name.outputs.version }}
+        if: ${{ failure() }}
 
 
   BuildAndDeployToStgAtReleaseBranch:
@@ -58,7 +59,7 @@ jobs:
           echo ${{ steps.extract_version_name.outputs.version }}
 
       - name: Send slack
-        uses: ./github/workflows/NotifySlack
+        uses: github/workflows/NotifySlack@release/1.0.0+220725
         with:
           environment: "STG"
           version: ${{ steps.extract_version_name.outputs.version }}

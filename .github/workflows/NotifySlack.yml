@@ -1,6 +1,5 @@
 name: NotifySlack
 
-# Only trigger, when the build workflow succeeded
 on:
   workflow_call:
     inputs:
@@ -12,9 +11,8 @@ on:
         required: true
 
 jobs:
-  notify:
+  NotifySlack:
     runs-on: ubuntu-latest
-
     steps:
       - name: Send slack
         uses: 8398a7/action-slack@v3
