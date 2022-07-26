@@ -71,7 +71,7 @@ jobs:
                 {
                   "mrkdwn_in": ["text"],
                   "color": '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
-                  "pretext": `${{ job.status }}' 'success' ? '✅ 배포 성공' ? '⛔ 배포 실패'`
+                  "pretext": `${{ job.status }}' === 'success' ? '✅ 배포 성공' ? '⛔ 배포 실패'`
                 }
               ]
             }
