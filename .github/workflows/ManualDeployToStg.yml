@@ -60,6 +60,14 @@ jobs:
         run: |
           echo Release Server
 
+      - name: 버전 정보 추출
+        run: |
+          echo "::set-output name=version::$(echo '${{ github.ref_name }}' | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')-${{ inputs.identifier }}$(echo '${{ github.ref_name }}' | egrep -o '\+[0-9]{6}')"
+        id: extract_version_name
+      - name: 버전 정보 프린트
+        run: |
+          echo ${{ steps.extract_version_name.outputs.version }}
+
       - name: Send slack
         uses: 8398a7/action-slack@v3
         with:
@@ -81,7 +89,7 @@ jobs:
                           },
                           {
                               "title": "version",
-                              "value": "버전 테스트",
+                              "value": `${'${{ steps.extract_version_name.outputs.version }}'}`,
                               "short": true
                           },
                           {
@@ -93,7 +101,12 @@ jobs:
                              "title": "environment",
                              "value": "STG",
                              "short": true
-                          }
+                          },
+                          {
+                             "title": "author",
+                             "value": `${process.env.AS_AUTHOR}`,
+                             "short": true
+                          },
                       ],
                       "footer": `@${process.env.AS_REF}`,
                       "footer_icon": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
