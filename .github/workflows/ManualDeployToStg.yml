@@ -30,11 +30,6 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ steps.extract_version_name.outputs.version }}
 
-      - name: Send slack if failed
-        if: ${{ failure() }}
-        run: |
-          echo "Build Fail"
-
   BuildAndDeployToStgAtReleaseBranch:
     if: ${{ inputs.identifier != '' && startsWith(github.ref_name, 'release/') }}
     needs: CreateTagForRelease
@@ -47,16 +42,25 @@ jobs:
         run: |
           echo Release Server
 
-      # 슬랙 배포 알람 Action 추가
-      - name: Send slack if failed
-        if: ${{ failure() }}
+      - name: 버전 정보 추출
         run: |
-          echo "Build Fail"
+          echo "::set-output name=version::$(echo '${{ github.ref_name }}' | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')-${{ inputs.identifier }}$(echo '${{ github.ref_name }}' | egrep -o '\+[0-9]{6}')"
+        id: extract_version_name
+      - name: 버전 정보 프린트
+        run: |
+          echo ${{ steps.extract_version_name.outputs.version }}
 
-      - name: Send slack if completed
-        if: ${{ success() }}
-        run: |
-          echo "Build Success"
+  NotifySlack:
+    if: ${{ inputs.identifier != '' && startsWith(github.ref_name, 'release/') && (needs.CreateTagForRelease.result == 'failure' || always()) }}
+    needs: [CreateTagForRelease, BuildAndDeployToStgAtReleaseBranch]
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send slack
+        uses: KyeongminKang-GGQ/ComposePlayground/.github/workflows/NotifySlack.yml@develop
+        with:
+          environment: "STG"
+          version: ${{ steps.extract_version_name.outputs.version }}
 
   CreateTagForHotfix:
     if: ${{ inputs.identifier != '' && startsWith(github.ref_name, 'hotfix/') }}
