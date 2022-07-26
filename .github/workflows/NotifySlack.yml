@@ -14,7 +14,6 @@ jobs:
   NotifySlack:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
       - name: Send slack
         uses: 8398a7/action-slack@v3
         with:
