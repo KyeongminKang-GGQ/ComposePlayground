@@ -57,7 +57,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Send slack
-        uses: ./.github/workflows/NotifySlack.yml
+        uses: KyeongminKang-GGQ/ComposePlayground/.github/workflows/NotifySlack.yml@develop
         with:
           environment: "STG"
           version: ${{ steps.extract_version_name.outputs.version }}
