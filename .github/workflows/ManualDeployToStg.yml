@@ -67,6 +67,9 @@ jobs:
           fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
           custom_payload: |
             {
+              attachments: [{
+                color: '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
+              }],
               blocks: [
                 {
                   "type": "section",
