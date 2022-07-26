@@ -47,27 +47,24 @@ jobs:
         run: |
           echo Release Server
 
-      - name: build result to slack
+      - name: Send slack
         uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
           fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+          custom_payload: |
+            {
+              attachments: [{
+                color: '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
+                text: `${process.env.AS_WORKFLOW}\n${process.env.AS_JOB} (${process.env.AS_COMMIT}) of ${process.env.AS_REPO}@${process.env.AS_REF} by ${process.env.AS_AUTHOR} ${{ job.status }} in ${process.env.AS_TOOK}`,
+              }]
+            }
           author_name: GGQ bot
 
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
         if: always()
 
-
-      - name: Send slack if failed
-        if: ${{ failure() }}
-        run: |
-          echo "Build Fail"
-
-      - name: Send slack if completed
-        if: ${{ success() }}
-        run: |
-          echo "Build Success"
 
   CreateTagForHotfix:
     if: ${{ inputs.identifier != '' && startsWith(github.ref_name, 'hotfix/') }}
