@@ -2,6 +2,10 @@ name: NotifySlack
 
 on:
   workflow_call:
+    secrets:
+      SLACK_WEBHOOK_URL:
+        description: 'needed for send slack'
+        required: true
     inputs:
       version:
         type: string
@@ -16,6 +20,9 @@ jobs:
     steps:
       - name: Send slack
         uses: 8398a7/action-slack@v3
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
+        if: always()
         with:
           status: custom
           fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
@@ -59,7 +66,3 @@ jobs:
               ]
             }
           author_name: GGQ bot
-
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
-        if: always()

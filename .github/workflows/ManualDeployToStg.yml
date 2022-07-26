@@ -53,14 +53,12 @@ jobs:
   NotifySlack:
     if: ${{ inputs.identifier != '' && startsWith(github.ref_name, 'release/') && (needs.CreateTagForRelease.result == 'failure' || always()) }}
     needs: [CreateTagForRelease, BuildAndDeployToStgAtReleaseBranch]
-
-    runs-on: ubuntu-latest
-    steps:
-      - name: Send slack
-        uses: KyeongminKang-GGQ/ComposePlayground/.github/workflows/NotifySlack.yml@develop
-        with:
-          environment: "STG"
-          version: ${{ steps.extract_version_name.outputs.version }}
+    uses: KyeongminKang-GGQ/ComposePlayground/.github/workflows/NotifySlack.yml@develop
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    with:
+      environment: "STG"
+      version: "1.0.0-rc.1+123456"
 
   CreateTagForHotfix:
     if: ${{ inputs.identifier != '' && startsWith(github.ref_name, 'hotfix/') }}
