@@ -67,11 +67,13 @@ jobs:
           fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
           custom_payload: |
             {
-              attachments: [
+              blocks: [
                 {
-                  "mrkdwn_in": ["text"],
-                  "color": '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
-                  "pretext": `${'${{ job.status }}' === 'success' ? '✅ 배포 성공' : '⛔ 배포 실패'} Test`
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": `${'${{ job.status }}' === 'success' ? '✅' : '⛔'} *Auth Server 배포 ${'${{ job.status }}' === 'success' ? '성공' : '실패'}*`
+                  }
                 }
               ]
             }
