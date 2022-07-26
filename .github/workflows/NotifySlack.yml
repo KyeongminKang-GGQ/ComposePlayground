@@ -1,0 +1,65 @@
+name: NotifySlack
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        required: true
+      environment:
+        type: string
+        required: true
+
+jobs:
+  NotifySlack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+          custom_payload: |
+            {
+              "attachments": [
+                  {
+                   "mrkdwn_in": ["text"],
+                      "color": '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
+                      "pretext": `${'${{ job.status }}' === 'success' ? '✅' : '⛔'} *Auth Server 배포 ${'${{ job.status }}' === 'success' ? '성공' : '실패'}*`,
+                      "fields": [
+                          {
+                              "title": "repo",
+                              "value": `${process.env.AS_REPO}`,
+                              "short": true
+                          },
+                          {
+                              "title": "version",
+                              "value": `${'${{ inputs.version }}'}`,
+                              "short": true
+                          },
+                          {
+                             "title": "commit",
+                             "value": `${process.env.AS_COMMIT}`,
+                             "short": true
+                          },
+                          {
+                             "title": "environment",
+                             "value": `${'${{ inputs.environment }}'}`,
+                             "short": true
+                          },
+                          {
+                             "title": "author",
+                             "value": `${process.env.AS_AUTHOR}`,
+                             "short": true
+                          },
+                      ],
+                      "footer": `@${process.env.AS_REF}`,
+                      "footer_icon": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+                  }
+              ]
+            }
+          author_name: GGQ bot
+
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
+        if: always()
