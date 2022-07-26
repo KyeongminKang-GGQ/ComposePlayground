@@ -31,21 +31,10 @@ jobs:
           tag: ${{ steps.extract_version_name.outputs.version }}
 
       - name: Send slack
-        uses: 8398a7/action-slack@v3
+        uses: ./github/workflows/NotifySlack
         with:
-          status: custom
-          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
-          custom_payload: |
-            {
-              attachments: [{
-                color: '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
-                text: `${process.env.AS_WORKFLOW}\n${process.env.AS_JOB} (${process.env.AS_COMMIT}) of ${process.env.AS_REPO}@${process.env.AS_REF} by ${process.env.AS_AUTHOR} ${{ job.status }} in ${process.env.AS_TOOK}`,
-              }]
-            }
-          author_name: GGQ bot
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
-        if: ${{ failure() }}
+          environment: "STG"
+          version: ${{ steps.extract_version_name.outputs.version }}
 
 
   BuildAndDeployToStgAtReleaseBranch:
@@ -69,55 +58,10 @@ jobs:
           echo ${{ steps.extract_version_name.outputs.version }}
 
       - name: Send slack
-        uses: 8398a7/action-slack@v3
+        uses: ./github/workflows/NotifySlack
         with:
-          status: custom
-          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
-          custom_payload: |
-            {
-              "attachments": [
-                  {
-                   "mrkdwn_in": ["text"],
-                      "color": '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
-                      "pretext": `${'${{ job.status }}' === 'success' ? '✅' : '⛔'} *Auth Server 배포 ${'${{ job.status }}' === 'success' ? '성공' : '실패'}*`,
-                      "author_name": `${process.env.AS_AUTHOR}`,
-                      "fields": [
-                          {
-                              "title": "repo",
-                              "value": `${process.env.AS_REPO}`,
-                              "short": true
-                          },
-                          {
-                              "title": "version",
-                              "value": `${'${{ steps.extract_version_name.outputs.version }}'}`,
-                              "short": true
-                          },
-                          {
-                             "title": "commit",
-                             "value": `${process.env.AS_COMMIT}`,
-                             "short": true
-                          },
-                          {
-                             "title": "environment",
-                             "value": "STG",
-                             "short": true
-                          },
-                          {
-                             "title": "author",
-                             "value": `${process.env.AS_AUTHOR}`,
-                             "short": true
-                          },
-                      ],
-                      "footer": `@${process.env.AS_REF}`,
-                      "footer_icon": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
-                  }
-              ]
-            }
-          author_name: GGQ bot
-
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
-        if: always()
+          environment: "STG"
+          version: ${{ steps.extract_version_name.outputs.version }}
 
 
   CreateTagForHotfix:
