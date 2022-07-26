@@ -54,6 +54,8 @@ jobs:
     if: ${{ inputs.identifier != '' && startsWith(github.ref_name, 'release/') && (needs.CreateTagForRelease.result == 'failure' || always()) }}
     needs: [CreateTagForRelease, BuildAndDeployToStgAtReleaseBranch]
     uses: KyeongminKang-GGQ/ComposePlayground/.github/workflows/NotifySlack.yml@develop
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     with:
       environment: "STG"
       version: "1.0.0-rc.1+123456"

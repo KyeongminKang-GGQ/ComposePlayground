@@ -2,6 +2,10 @@ name: NotifySlack
 
 on:
   workflow_call:
+    secrets:
+      SLACK_WEBHOOK_URL:
+        description: 'needed for send slack'
+        required: true
     inputs:
       version:
         type: string
