@@ -67,17 +67,37 @@ jobs:
           fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
           custom_payload: |
             {
-              attachments: [{
-                color: '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
-              }],
-              blocks: [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": `${'${{ job.status }}' === 'success' ? '✅' : '⛔'} *Auth Server 배포 ${'${{ job.status }}' === 'success' ? '성공' : '실패'}*`
+              "attachments": [
+                  {
+                   "mrkdwn_in": ["text"],
+                      "color": '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
+                      "pretext": `${'${{ job.status }}' === 'success' ? '✅' : '⛔'} *Auth Server 배포 ${'${{ job.status }}' === 'success' ? '성공' : '실패'}*`,
+                      "author_name": `${process.env.AS_AUTHOR}`,
+                      "fields": [
+                          {
+                              "title": "repo",
+                              "value": `${process.env.AS_REPO}`,
+                              "short": true
+                          },
+                          {
+                              "title": "version",
+                              "value": "버전 테스트",
+                              "short": true
+                          },
+                          {
+                             "title": "commit",
+                             "value": `${process.env.AS_COMMIT}`,
+                             "short": true
+                          },
+                          {
+                             "title": "environment",
+                             "value": "STG",
+                             "short": true
+                          }
+                      ],
+                      "footer": `@${process.env.AS_REF}`,
+                      "footer_icon": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
                   }
-                }
               ]
             }
           author_name: GGQ bot
