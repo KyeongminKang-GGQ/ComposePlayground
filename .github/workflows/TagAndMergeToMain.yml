@@ -2,9 +2,13 @@ name: TagAndMergeToMain
 
 on:
   workflow_call:
+    outputs:
+      version:
+        description: "Extract version name"
+        value: ${{ jobs.TagAndMergeToMain.outputs.version }}
 
 jobs:
-  ManualDeploy:
+  TagAndMergeToMain:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.extract_version_name.outputs.version }}
