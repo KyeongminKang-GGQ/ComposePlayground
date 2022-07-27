@@ -10,6 +10,8 @@ jobs:
       - name: Start TagAndMergeToMain Workflow
         run: |
           echo Start TagAndMergeToMain Workflow
+
+      - uses: actions/checkout@v2
       - name: Extract Version Name
         run: |
           if '${{ startsWith(github.ref_name, 'hotfix/') }}'
