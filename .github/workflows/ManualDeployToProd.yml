@@ -2,132 +2,57 @@ name: ManualDeployToProd
 on:
   workflow_dispatch:
 
+# Reusable workflow에서 env를 공유할 수 없음
+# PROD 서버 설정 후 변경
+env:
+  service_prefix: ecss-an2-d-ggq
+  cluster: ecsc-an2-d-ggq
+  container: lol_auth
+
 jobs:
   BuildAndDeployToProdAtReleaseBranch:
     if: ${{ startsWith(github.ref_name, 'release/') }}
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
-
-      # 실제로 서버 배포하는 Action 추가
-      # 슬랙 배포 알람 Action 추가
-
-      - name: 버전 정보 추출
-        run: |
-          echo "::set-output name=version::$(echo '${{ github.ref_name }}' | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\+[0-9]{6}')"
-        id: extract_version_name
-
-      - if: ${{ steps.extract_branch_name.outputs.version != '' }}
-        name: Print Tag
-        run: |
-          echo ${{ steps.extract_version_name.outputs.version }}
-
-      - if: ${{ steps.extract_version_name.outputs.version != '' }}
-        name: Set Git config
-        run: |
-            git config --local user.email "actions@github.com"
-            git config --local user.name "Github Actions"
-
-      - if: ${{ steps.extract_version_name.outputs.version != '' }}
-        name: Merge to main
-        run: |
-            git fetch --unshallow
-            git checkout main
-            git pull
-            git merge --no-ff ${{ github.ref_name }} -m "Auto-merge from ${{ github.ref_name }} to main"
-            git push
-            git tag ${{ steps.extract_version_name.outputs.version }}
-            git push origin ${{ steps.extract_version_name.outputs.version }}
-
-      - if: ${{ steps.extract_version_name.outputs.version != '' }}
-        name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{steps.extract_version_name.outputs.version }}
-          release_name: ${{ steps.extract_version_name.outputs.version }}
-
-      - if: ${{ steps.extract_version_name.outputs.version != '' }}
-        name: Delete branch
-        uses: dawidd6/action-delete-branch@v3
-        with:
-            github_token: ${{ secrets.GITHUB_TOKEN }}
-            branches: ${{ github.ref_name }}
-
-      - name: Send slack if failed
-        if: ${{ failure() }}
-        run: |
-          echo "Build Fail"
-
-      - name: Send slack if completed
-        if: ${{ success() }}
-        run: |
-          echo "Build Success"
+    uses: ./.github/workflows/ManualDeploy.yml
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
+      ECR_REGISTRY: ${{ secrets.ECR_REGISTRY_PROD }}
+      ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_PROD }}
+    with:
+      taskDefinition: task-definition-prod.json
+      # Reusable workflow에서 env를 공유할 수 없음
+      # TODO: STG 서버 설정 후 변경 예정
+      container: lol_auth
+      cluster: ecsc-an2-d-ggq
+      service_prefix: ecss-an2-d-ggq
 
   BuildAndDeployToProdAtHotfixBranch:
     if: ${{ startsWith(github.ref_name, 'hotfix/') }}
+    uses: ./.github/workflows/ManualDeploy.yml
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
+      ECR_REGISTRY: ${{ secrets.ECR_REGISTRY_PROD }}
+      ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_PROD }}
+    with:
+      taskDefinition: task-definition-prod.json
+      # Reusable workflow에서 env를 공유할 수 없음
+      # TODO: STG 서버 설정 후 변경 예정
+      container: lol_auth
+      cluster: ecsc-an2-d-ggq
+      service_prefix: ecss-an2-d-ggq
 
-    runs-on: ubuntu-latest
+  TagAndMergeForProd:
+    if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
+    needs: [BuildAndDeployToProdAtReleaseBranch, BuildAndDeployToProdAtHotfixBranch]
+    uses: ./.github/workflows/TagAndMergeToMain.yml
 
-    steps:
-      - uses: actions/checkout@v2
-
-      # 실제로 서버 배포하는 Action 추가
-      # 슬랙 배포 알람 Action 추가
-
-      - name: 버전 정보 추출
-        run: |
-          echo "::set-output name=version::$(echo '${{ github.ref_name }}' | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')+hotfix.$(echo '${{ github.ref_name }}' | egrep -o '[0-9]{6}')"
-        id: extract_version_name
-
-      - if: ${{ steps.extract_version_name.outputs.version != '' }}
-        name: Print Tag
-        run: |
-          echo ${{ steps.extract_version_name.outputs.version }}
-
-      - if: ${{ steps.extract_version_name.outputs.version != '' }}
-        name: Set Git config
-        run: |
-          git config --local user.email "actions@github.com"
-          git config --local user.name "Github Actions"
-
-      - if: ${{ steps.extract_version_name.outputs.version != '' }}
-        name: Merge to main
-        run: |
-          git fetch --unshallow
-          git pull
-          git merge --no-ff ${{ github.ref_name }} -m "Auto-merge from ${{ github.ref_name }} to main"
-          git push
-          git tag ${{ steps.extract_version_name.outputs.version }}
-          git push origin ${{ steps.extract_version_name.outputs.version }}
-
-      - if: ${{ steps.extract_version_name.outputs.version != '' }}
-        name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{steps.extract_version_name.outputs.version }}
-          release_name: ${{ steps.extract_version_name.outputs.version }}
-
-      - if: ${{ steps.extract_version_name.outputs.version != '' }}
-        name: Delete branch
-        uses: dawidd6/action-delete-branch@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branches: ${{ github.ref_name }}
-
-      - name: Send slack if failed
-        if: ${{ failure() }}
-        run: |
-          echo "Build Fail"
-
-      - name: Send slack if completed
-        if: ${{ success() }}
-        run: |
-          echo "Build Success"
+  NotifySlack:
+    if: ${{ always() }}
+    needs: TagAndMergeForProd
+    uses: ./.github/workflows/NotifySlack.yml
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    with:
+      environment: "PROD"
+      version: "1.0.0+123456"

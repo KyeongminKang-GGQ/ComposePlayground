@@ -1,0 +1,38 @@
+name: ManualDeploy
+
+on:
+  workflow_call:
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        description: "needed for access aws"
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        description: "needed for access aws"
+        required: true
+      ECR_REGISTRY:
+        description: "needed for access aws ecr"
+        required: true
+      ECR_REPOSITORY:
+        description: "needed for access aws ecr"
+        required: true
+    inputs:
+      taskDefinition:
+        type: string
+        required: true
+      container:
+        type: string
+        required: true
+      cluster:
+        type: string
+        required: true
+      service_prefix:
+        type: string
+        required: true
+
+jobs:
+  ManualDeploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 버전 정보 프린트
+        run: |
+          echo ${{ inputs.taskDefinition }} ${{ inputs.container }} ${{ inputs.cluster }} ${{ inputs.service_prefix }}
