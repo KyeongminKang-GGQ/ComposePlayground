@@ -13,6 +13,9 @@ on:
       environment:
         type: string
         required: true
+      status:
+        type: string
+        required: true
 
 jobs:
   NotifySlack:
@@ -31,8 +34,8 @@ jobs:
               "attachments": [
                   {
                    "mrkdwn_in": ["text"],
-                      "color": '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
-                      "pretext": `${'${{ job.status }}' === 'success' ? '✅' : '⛔'} *Auth Server 배포 ${'${{ job.status }}' === 'success' ? '성공' : '실패'}*`,
+                      "color": '${{ inputs.status }}' === 'success' ? 'good' : '${{ inputs.status }}' === 'failure' ? 'danger' : 'warning',
+                      "pretext": `${'${{ inputs.status }}' === 'success' ? '✅' : '⛔'} *Auth Server 배포 ${'${{ inputs.status }}' === 'success' ? '성공' : '실패'}*`,
                       "fields": [
                           {
                               "title": "repo",
