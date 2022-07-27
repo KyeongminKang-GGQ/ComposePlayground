@@ -47,6 +47,7 @@ jobs:
       # 슬랙 배포 알람 Action 추가
 
   TagAndMergeForProd:
+    if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
     needs: [BuildAndDeployToProdAtReleaseBranch, BuildAndDeployToProdAtHotfixBranch]
     uses: ./.github/workflows/TagAndMergeToMain.yml
 
