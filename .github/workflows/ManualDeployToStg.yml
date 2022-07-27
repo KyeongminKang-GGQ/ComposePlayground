@@ -27,6 +27,13 @@ jobs:
       identifier: ${{ inputs.identifier }}
       version: ${{ needs.ExtractVersion.outputs.version }}
 
+  Test:
+    runs-on: ubuntu-latest
+    needs: SetTagForStg
+    steps:
+      - run: |
+          echo ${{ needs.SetTagForStg.result }}
+
   BuildAndDeployToStg:
     if: ${{ inputs.identifier != '' && (needs.SetTagForStg.result == 'skipped' || startsWith(github.ref_name, 'release/') || inputs.identifier != '' && startsWith(github.ref_name, 'hotfix/')) }}
     needs: SetTagForStg
