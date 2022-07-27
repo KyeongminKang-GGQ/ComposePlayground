@@ -7,7 +7,6 @@ on:
         description: "Extract version name"
         value: ${{ jobs.SetTagForProd.outputs.version }}
 
-
 jobs:
   SetTagForProd:
     if: ${{ (startsWith(github.ref_name, 'release/') || inputs.identifier != '' && startsWith(github.ref_name, 'hotfix/')) }}
