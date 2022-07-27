@@ -8,6 +8,9 @@ on:
         options:
           - eu-west-1
           - ap-northeast-2
+      tagging:
+        type: boolean
+        description: Auto tagging + Auto main merging
 
 # Reusable workflow에서 env를 공유할 수 없음
 # PROD 서버 설정 후 변경
@@ -35,6 +38,7 @@ jobs:
       region: ${{ inputs.region }}
 
   SetTagForProd:
+    if: ${{ inputs.tagging }
     needs: BuildAndDeployToProd
     uses: ./.github/workflows/SetTagForProd.yml
 

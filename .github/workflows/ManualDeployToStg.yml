@@ -11,15 +11,19 @@ on:
         options:
           - eu-west-1
           - ap-northeast-2
+      tagging:
+        type: boolean
+        description: Auto tagging
 
 jobs:
   SetTagForStg:
+    if: ${{ inputs.tagging }
     uses: ./.github/workflows/SetTagForStg.yml
     with:
       identifier: ${{ inputs.identifier }}
 
   BuildAndDeployToStg:
-    if: ${{ inputs.identifier != '' && (startsWith(github.ref_name, 'release/') || inputs.identifier != '' && startsWith(github.ref_name, 'hotfix/')) }}
+    if: ${{ inputs.identifier != '' && (needs.SetTagForStg.result == 'skipped' || startsWith(github.ref_name, 'release/') || inputs.identifier != '' && startsWith(github.ref_name, 'hotfix/')) }}
     needs: SetTagForStg
     uses: ./.github/workflows/ManualDeploy.yml
     secrets:
