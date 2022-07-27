@@ -10,6 +10,7 @@ on:
 
 jobs:
   SetTagForProd:
+    if: ${{ (startsWith(github.ref_name, 'release/') || inputs.identifier != '' && startsWith(github.ref_name, 'hotfix/')) }}
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.extract_version_name.outputs.version }}
