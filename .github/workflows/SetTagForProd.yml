@@ -1,21 +1,22 @@
-name: TagAndMergeToMain
+name: SetTagForProd
 
 on:
   workflow_call:
     outputs:
       version:
         description: "Extract version name"
-        value: ${{ jobs.TagAndMergeToMain.outputs.version }}
+        value: ${{ jobs.SetTagForProd.outputs.version }}
+
 
 jobs:
-  TagAndMergeToMain:
+  SetTagForProd:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.extract_version_name.outputs.version }}
     steps:
-      - name: Start TagAndMergeToMain Workflow
+      - name: Start SetTagForProd Workflow
         run: |
-          echo Start TagAndMergeToMain Workflow
+          echo Start SetTagForProd Workflow
 
       - uses: actions/checkout@v2
       - name: Extract Version Name
