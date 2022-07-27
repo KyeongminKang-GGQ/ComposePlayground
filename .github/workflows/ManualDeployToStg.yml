@@ -31,7 +31,7 @@ jobs:
 
   NotifySlackToSuccess:
     if: ${{ success() }}
-    needs: BuildAndDeployToStg
+    needs: [SetTagForStg, BuildAndDeployToStg]
     uses: ./.github/workflows/NotifySlack.yml
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -42,7 +42,7 @@ jobs:
 
   NotifySlackToFail:
     if: ${{ failure() }}
-    needs: BuildAndDeployToStg
+    needs: [SetTagForStg, BuildAndDeployToStg]
     uses: ./.github/workflows/NotifySlack.yml
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
