@@ -16,11 +16,16 @@ on:
         description: Auto tagging / 모든 region 배포 완료 후 버전 태깅 시 꼭 체크해주세요!
 
 jobs:
+  ExtractVersion:
+    uses: ./.github/workflows/ExtractVersion.yml
+
   SetTagForStg:
-    if: ${{ inputs.tagging }
+    if: ${{ inputs.tagging }}
     uses: ./.github/workflows/SetTagForStg.yml
+    needs: ExtractVersion
     with:
       identifier: ${{ inputs.identifier }}
+      version: ${{ needs.ExtractVersion.outputs.version }}
 
   BuildAndDeployToStg:
     if: ${{ inputs.identifier != '' && (needs.SetTagForStg.result == 'skipped' || startsWith(github.ref_name, 'release/') || inputs.identifier != '' && startsWith(github.ref_name, 'hotfix/')) }}
@@ -42,24 +47,24 @@ jobs:
 
   NotifySlackToSuccess:
     if: ${{ success() }}
-    needs: [SetTagForStg, BuildAndDeployToStg]
+    needs: [ExtractVersion, BuildAndDeployToStg]
     uses: ./.github/workflows/NotifySlack.yml
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     with:
       environment: STG
-      version: ${{ needs.SetTagForStg.outputs.version }}
+      version: ${{ needs.ExtractVersion.outputs.version }}
       status: success
       region: ${{ inputs.region }}
 
   NotifySlackToFail:
     if: ${{ failure() }}
-    needs: [SetTagForStg, BuildAndDeployToStg]
+    needs: [ExtractVersion, BuildAndDeployToStg]
     uses: ./.github/workflows/NotifySlack.yml
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     with:
       environment: STG
-      version: ${{ needs.SetTagForStg.outputs.version }}
+      version: ${{ needs.ExtractVersion.outputs.version }}
       status: failure
       region: ${{ inputs.region }}

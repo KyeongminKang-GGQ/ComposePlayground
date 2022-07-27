@@ -37,31 +37,36 @@ jobs:
       service_prefix: ecss-an2-d-ggq
       region: ${{ inputs.region }}
 
+  ExtractVersion:
+    uses: ./.github/workflows/ExtractVersion.yml
+
   SetTagForProd:
-    if: ${{ inputs.tagging }
-    needs: BuildAndDeployToProd
+    if: ${{ inputs.tagging }}
+    needs: [BuildAndDeployToProd, ExtractVersion]
     uses: ./.github/workflows/SetTagForProd.yml
+    with:
+      version: ${{ needs.ExtractVersion.outputs.version }}
 
   NotifySlackToSuccess:
     if: ${{ success() }}
-    needs: SetTagForProd
+    needs: [ExtractVersion, SetTagForProd]
     uses: ./.github/workflows/NotifySlack.yml
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     with:
       environment: PROD
-      version: ${{ needs.SetTagForProd.outputs.version }}
+      version: ${{ needs.ExtractVersion.outputs.version }}
       status: success
       region: ${{ inputs.region }}
 
   NotifySlackToFail:
     if: ${{ failure() }}
-    needs: SetTagForProd
+    needs: [ExtractVersion, SetTagForProd]
     uses: ./.github/workflows/NotifySlack.yml
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     with:
       environment: PROD
-      version: ${{ needs.SetTagForProd.outputs.version }}
+      version: ${{ needs.ExtractVersion.outputs.version }}
       status: failure
       region: ${{ inputs.region }}
