@@ -5,6 +5,12 @@ on:
       identifier:
         type: string
         required: false
+      region:
+        type: choice
+        description: AWS region
+        options:
+          - eu-west-1
+          - ap-northeast-2
 
 jobs:
   SetTagForStg:
@@ -28,6 +34,7 @@ jobs:
       container: lol_auth
       cluster: ecsc-an2-d-ggq
       service_prefix: ecss-an2-d-ggq
+      region: ${{ inputs.region }}
 
   NotifySlackToSuccess:
     if: ${{ success() }}

@@ -28,6 +28,9 @@ on:
       service_prefix:
         type: string
         required: true
+      region:
+        type: string
+        required: true
 
 jobs:
   ManualDeploy:
@@ -35,4 +38,4 @@ jobs:
     steps:
       - name: 버전 정보 프린트
         run: |
-          echo ${{ inputs.taskDefinition }} ${{ inputs.container }} ${{ inputs.cluster }} ${{ inputs.service_prefix }}
+          echo ${{ inputs.taskDefinition }} ${{ inputs.container }} ${{ inputs.cluster }} ${{ inputs.service_prefix }} ${{ inputs.region }}
