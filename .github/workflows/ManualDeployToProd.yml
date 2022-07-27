@@ -26,8 +26,6 @@ jobs:
       cluster: ecsc-an2-d-ggq
       service_prefix: ecss-an2-d-ggq
 
-      # 슬랙 배포 알람 Action 추가
-
   BuildAndDeployToProdAtHotfixBranch:
     if: ${{ startsWith(github.ref_name, 'hotfix/') }}
     uses: ./.github/workflows/ManualDeploy.yml
@@ -44,14 +42,13 @@ jobs:
       cluster: ecsc-an2-d-ggq
       service_prefix: ecss-an2-d-ggq
 
-      # 슬랙 배포 알람 Action 추가
-
   TagAndMergeForProd:
     if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
     needs: [BuildAndDeployToProdAtReleaseBranch, BuildAndDeployToProdAtHotfixBranch]
     uses: ./.github/workflows/TagAndMergeToMain.yml
 
   NotifySlack:
+    if: ${{ always() }}
     needs: TagAndMergeForProd
     uses: ./.github/workflows/NotifySlack.yml
     secrets:
