@@ -20,8 +20,7 @@ jobs:
           fi
         id: version
 
-      - if: ${{ inputs.version != '' }}
-        name: Print Tag
+      - name: Print Tag
         run: |
           echo ${{ inputs.version }}
 
