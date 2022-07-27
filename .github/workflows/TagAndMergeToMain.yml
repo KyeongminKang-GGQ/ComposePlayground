@@ -6,6 +6,8 @@ on:
 jobs:
   ManualDeploy:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.extract_version_name.outputs.version }}
     steps:
       - name: Start TagAndMergeToMain Workflow
         run: |
