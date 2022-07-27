@@ -49,8 +49,6 @@ jobs:
   TagAndMergeForProd:
     needs: [BuildAndDeployToProdAtReleaseBranch, BuildAndDeployToProdAtHotfixBranch]
     uses: ./.github/workflows/TagAndMergeToMain.yml
-    secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   NotifySlack:
     needs: TagAndMergeForProd
