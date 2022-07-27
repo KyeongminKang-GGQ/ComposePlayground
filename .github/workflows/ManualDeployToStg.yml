@@ -28,6 +28,7 @@ jobs:
       version: ${{ needs.ExtractVersion.outputs.version }}
 
   Test:
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     needs: SetTagForStg
     steps:
