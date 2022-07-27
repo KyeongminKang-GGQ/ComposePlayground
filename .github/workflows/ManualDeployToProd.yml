@@ -55,4 +55,4 @@ jobs:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     with:
       environment: "PROD"
-      version: "1.0.0+123456"
+      version: ${{ needs.TagAndMergeForProd.outputs.version }}
