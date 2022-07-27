@@ -46,6 +46,7 @@ jobs:
       environment: STG
       version: ${{ needs.SetTagForStg.outputs.version }}
       status: success
+      region: ${{ inputs.region }}
 
   NotifySlackToFail:
     if: ${{ failure() }}
@@ -57,3 +58,4 @@ jobs:
       environment: STG
       version: ${{ needs.SetTagForStg.outputs.version }}
       status: failure
+      region: ${{ inputs.region }}

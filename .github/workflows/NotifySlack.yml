@@ -16,6 +16,9 @@ on:
       status:
         type: string
         required: true
+      region:
+        type: string
+        required: true
 
 jobs:
   NotifySlack:
@@ -60,6 +63,11 @@ jobs:
                           {
                              "title": "author",
                              "value": `${process.env.AS_AUTHOR}`,
+                             "short": true
+                          },
+                          {
+                             "title": "region",
+                             "value": `${'${{ inputs.region }}'}`,
                              "short": true
                           },
                       ],

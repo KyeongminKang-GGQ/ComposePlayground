@@ -48,6 +48,7 @@ jobs:
       environment: PROD
       version: ${{ needs.SetTagForProd.outputs.version }}
       status: success
+      region: ${{ inputs.region }}
 
   NotifySlackToFail:
     if: ${{ failure() }}
@@ -59,3 +60,4 @@ jobs:
       environment: PROD
       version: ${{ needs.SetTagForProd.outputs.version }}
       status: failure
+      region: ${{ inputs.region }}
