@@ -13,7 +13,7 @@ jobs:
   GetLatestTag:
     uses: ./.github/workflows/GetLatestTag.yml
     with:
-      eivnronment: ${{ inputs.environment }}
+      environment: ${{ inputs.environment }}
 
   # release/hotfix 브랜치에서 RC버전 태깅
   ExtractNewTagForStg:
