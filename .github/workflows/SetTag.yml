@@ -1,7 +1,8 @@
 name: SetTag
 on:
   workflow_dispatch:
-    environment:
+    inputs:
+      environment:
         type: choice
         description: 배포 환경
         options:
