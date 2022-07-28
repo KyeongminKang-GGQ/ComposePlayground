@@ -7,36 +7,63 @@ on:
         description: 배포 환경
         options:
           - STG
-          - PRD
+          - PROD
 
 jobs:
-  ExtractRcVersion:
-    if: ${{ inputs.environment == 'STG' && (startsWith(github.ref_name, 'release/') || startsWith(github.ref_name, 'hotfix/')) }}
+  ExtractTag:
+    if: ${{ startsWith(github.ref_name, 'release/') || startsWith(github.ref_name, 'hotfix/') }}
     runs-on: ubuntu-latest
     steps:
         - uses: actions/checkout@v2
           with:
             fetch-depth: 0
-        - name: Get tag
+
+        - if: ${{ inputs.environment == 'STG' }}
+          name: Get latest RC tag
           id: extract_rc_version
           run: |
-            echo "::set-output name=version::$(git describe --tag --abbrev=0) | sed -rn 's/[[:digit:]]{1,3}.[[:digit:]]{1,3}.[[:digit:]]{1,3}-rc.([[:digit:]]*)\+[[:digit:]]{6}/\1/p'"
+            if '${{ startsWith(github.ref_name, 'hotfix/') }}'
+            then
+              echo "::set-output name=version::$(git describe --tag --abbrev=0) | sed -rn 's/[[:digit:]]{1,3}.[[:digit:]]{1,3}.[[:digit:]]{1,3}-rc.([[:digit:]]*)\+hotfix.[[:digit:]]{6}/\1/p'"
+            else
+              echo "::set-output name=version::$(git describe --tag --abbrev=0) | sed -rn 's/[[:digit:]]{1,3}.[[:digit:]]{1,3}.[[:digit:]]{1,3}-rc.([[:digit:]]*)\+[[:digit:]]{6}/\1/p'"
+            fi
 
-        - name: Print RC Version
+        - if: ${{ inputs.environment == 'STG' }}
+          name: Print latest RC tag
           run: |
             echo ${{ steps.extract_rc_version.outputs.version }}
-            echo $(($(echo ${{ steps.extract_rc_version.outputs.version }}) + 1))
 
-        - name: Print Tag Version
-          id: extract_tag_version
+        - if: ${{ inputs.environment == 'STG' }}
+          name: Calculate new RC tag
+          id: extract_new_rc_version
           run: |
             if '${{ steps.extract_rc_version.outputs.version != '' }}'
             then
-              echo "::set-output name=tagVersion::$(($(echo ${{ steps.extract_rc_version.outputs.version }}) + 1))"
+              echo "::set-output name=version::$(($(echo ${{ steps.extract_rc_version.outputs.version }}) + 1))"
             else
-              echo "::set-output name=tagVersion::$(echo ${{ steps.extract_rc_version.outputs.version }})"
+              echo "::set-output name=version::$(echo ${{ steps.extract_rc_version.outputs.version }})"
             fi
 
-        - name: Print TAG Version
+        - name: Print new tag
+          id: extract_new_tag
           run: |
-            echo ${{ steps.extract_tag_version.outputs.tagVersion }}
+            if '${{ inputs.environment == 'STG' && steps.extract_new_rc_version.outputs.version != '' }}'
+            then
+              echo "::set-output name=tag::$(echo ${{ steps.extract_new_rc_version.outputs.version }})"
+            elif '${{ inputs.environment == 'PROD' }}'
+            then
+              if '${{ startsWith(github.ref_name, 'hotfix/') }}'
+              then
+                echo "::set-output name=tag::$(echo '${{ github.ref_name }}' | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')+hotfix.$(echo '${{ github.ref_name }}' | egrep -o '[0-9]{6}')"
+              else
+                echo "::set-output name=tag::$(echo '${{ github.ref_name }}' | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\+[0-9]{6}')"
+              fi
+            else
+              echo ""
+            fi
+
+        - if: ${{ steps.extract_new_tag.outputs.tag != '' }}
+          name: Print tag name
+          run: |
+            echo ${{ steps.extract_new_tag.outputs.tag }}
