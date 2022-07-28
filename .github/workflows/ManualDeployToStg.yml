@@ -11,11 +11,13 @@ on:
 
 jobs:
   GetLatestTag:
+    if: ${{ startsWith(github.ref_name, 'release/') || startsWith(github.ref_name, 'hotfix/') }}
     uses: ./.github/workflows/GetLatestTag.yml
     with:
       environment: STG
 
   GetCommitFromTag:
+    if: ${{ startsWith(github.ref_name, 'release/') || startsWith(github.ref_name, 'hotfix/') }}
     uses: ./.github/workflows/GetCommitFromTag.yml
     needs: GetLatestTag
     with:
