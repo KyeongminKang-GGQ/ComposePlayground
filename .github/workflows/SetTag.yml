@@ -18,6 +18,10 @@ jobs:
           with:
             fetch-depth: 0
 
+        - name: Print values
+          run: |
+            echo environment = ${{ inputs.environment }} / branch = ${{ github.ref_name }} / latest_tag = $(git describe --tag --abbrev=0)
+
         - if: ${{ inputs.environment == 'STG' }}
           name: Get latest RC tag
           id: extract_rc_version
