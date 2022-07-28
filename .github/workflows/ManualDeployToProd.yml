@@ -1,18 +1,30 @@
 name: ManualDeployToProd
 on:
   workflow_dispatch:
-
-# Reusable workflow에서 env를 공유할 수 없음
-# PROD 서버 설정 후 변경
-env:
-  service_prefix: ecss-an2-d-ggq
-  cluster: ecsc-an2-d-ggq
-  container: lol_auth
+    inputs:
+      region:
+        type: choice
+        description: 배포할 AWS region를 선택하세요.
+        options:
+          - eu-west-1
+          - ap-northeast-2
 
 jobs:
+  GetLatestTag:
+    uses: ./.github/workflows/GetLatestTag.yml
+    with:
+      environment: PROD
+
+  GetCommitFromTag:
+    uses: ./.github/workflows/GetCommitFromTag.yml
+    needs: GetLatestTag
+    with:
+      tag: ${{ needs.GetLatestTag.outputs.tag }}
+
   BuildAndDeployToProd:
-    if: ${{ startsWith(github.ref_name, 'release/') || startsWith(github.ref_name, 'hotfix/') }}
-    uses: ./.github/workflows/ManualDeploy.yml
+    if: ${{ github.ref_name == 'main' }}
+    needs: GetCommitFromTag
+    uses: ./.github/workflows/Deploy.yml
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
@@ -25,29 +37,31 @@ jobs:
       container: lol_auth
       cluster: ecsc-an2-d-ggq
       service_prefix: ecss-an2-d-ggq
-
-  SetTagForProd:
-    needs: BuildAndDeployToProd
-    uses: ./.github/workflows/SetTagForProd.yml
+      region: ${{ inputs.region }}
+      commit: ${{ needs.GetCommitFromTag.outputs.commit }}
 
   NotifySlackToSuccess:
     if: ${{ success() }}
-    needs: SetTagForProd
+    needs: [GetLatestTag, GetCommitFromTag, BuildAndDeployToProd]
     uses: ./.github/workflows/NotifySlack.yml
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     with:
       environment: PROD
-      version: ${{ needs.SetTagForProd.outputs.version }}
+      version: ${{ needs.GetLatestTag.outputs.tag }}
       status: success
+      region: ${{ inputs.region }}
+      commit: ${{ needs.GetCommitFromTag.outputs.commit }}
 
   NotifySlackToFail:
     if: ${{ failure() }}
-    needs: SetTagForProd
+    needs: [GetLatestTag, GetCommitFromTag, BuildAndDeployToProd]
     uses: ./.github/workflows/NotifySlack.yml
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     with:
       environment: PROD
-      version: ${{ needs.SetTagForProd.outputs.version }}
+      version: ${{ needs.GetLatestTag.outputs.tag }}
       status: failure
+      region: ${{ inputs.region }}
+      commit: ${{ needs.GetCommitFromTag.outputs.commit }}

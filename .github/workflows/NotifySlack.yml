@@ -16,6 +16,12 @@ on:
       status:
         type: string
         required: true
+      region:
+        type: string
+        required: true
+      commit:
+        type: string
+        required: false
 
 jobs:
   NotifySlack:
@@ -48,8 +54,8 @@ jobs:
                               "short": true
                           },
                           {
-                             "title": "commit",
-                             "value": `${process.env.AS_COMMIT}`,
+                             "title": "release commit",
+                             "value": `${'${{ inputs.commit }}'}`,
                              "short": true
                           },
                           {
@@ -62,8 +68,13 @@ jobs:
                              "value": `${process.env.AS_AUTHOR}`,
                              "short": true
                           },
+                          {
+                             "title": "region",
+                             "value": `${'${{ inputs.region }}'}`,
+                             "short": true
+                          },
                       ],
-                      "footer": `@${process.env.AS_REF}`,
+                      "footer": `@${process.env.AS_REF} / ${process.env.AS_COMMIT}`,
                       "footer_icon": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
                   }
               ]

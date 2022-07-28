@@ -1,11 +1,17 @@
 name: ManualDeployToDev
 on:
   workflow_dispatch:
+    inputs:
+      region:
+        type: choice
+        description: AWS region
+        options:
+          - ap-northeast-2
 
 jobs:
   BuildAndDeployToDev:
     if: ${{ startsWith(github.ref_name, 'feature/') }}
-    uses: ./.github/workflows/ManualDeploy.yml
+    uses: ./.github/workflows/Deploy.yml
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
@@ -18,3 +24,5 @@ jobs:
       container: lol_auth
       cluster: ecsc-an2-d-ggq
       service_prefix: ecss-an2-d-ggq
+      region: ${{ inputs.region }}
+      commit: ${{ github.sha }}

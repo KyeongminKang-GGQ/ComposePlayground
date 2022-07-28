@@ -1,4 +1,4 @@
-name: ManualDeploy
+name: Deploy
 
 on:
   workflow_call:
@@ -28,11 +28,18 @@ on:
       service_prefix:
         type: string
         required: true
+      region:
+        type: string
+        required: true
+      commit:
+        type: string
+        required: true
 
 jobs:
-  ManualDeploy:
+  Deploy:
     runs-on: ubuntu-latest
     steps:
       - name: 버전 정보 프린트
         run: |
-          echo ${{ inputs.taskDefinition }} ${{ inputs.container }} ${{ inputs.cluster }} ${{ inputs.service_prefix }}
+          echo ${{ inputs.taskDefinition }} ${{ inputs.container }} ${{ inputs.cluster }} ${{ inputs.service_prefix }} ${{ inputs.region }} ${{ github.sha }}
+          echo ${{ inputs.commit }}

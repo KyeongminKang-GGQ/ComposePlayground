@@ -2,22 +2,18 @@ name: SetTagForProd
 
 on:
   workflow_call:
-    outputs:
-      version:
-        description: "Extract version name"
-        value: ${{ jobs.SetTagForProd.outputs.version }}
+    inputs:
+      environment:
+        type: string
+        required: true
 
 jobs:
-  SetTagForProd:
-    if: ${{ startsWith(github.ref_name, 'release/') || startsWith(github.ref_name, 'hotfix/') }}
+  ExtractVersion:
+    if: ${{ inputs.environment == 'PROD' && (startsWith(github.ref_name, 'release/') || startsWith(github.ref_name, 'hotfix/')) }}
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.extract_version_name.outputs.version }}
     steps:
-      - name: Start SetTagForProd Workflow
-        run: |
-          echo Start SetTagForProd Workflow
-
       - uses: actions/checkout@v2
       - name: Extract Version Name
         run: |
@@ -32,39 +28,46 @@ jobs:
           fi
         id: extract_version_name
 
-      - name: Print Tag
+      - name: Print Version
         run: |
           echo ${{ steps.extract_version_name.outputs.version }}
 
-      - if: ${{ steps.extract_version_name.outputs.version != '' }}
-        name: Set Git config
+  SetTagForProd:
+    if: ${{ needs.ExtractVersion.outputs.version != '' && inputs.environment == 'PROD' && (startsWith(github.ref_name, 'release/') || startsWith(github.ref_name, 'hotfix/')) }}
+    needs: ExtractVersion
+    runs-on: ubuntu-latest
+    steps:
+      - name: Start SetTagForProd Workflow
+        run: |
+          echo Start SetTagForProd Workflow
+
+      - uses: actions/checkout@v2
+
+      - name: Set Git config
         run: |
           git config --local user.email "actions@github.com"
           git config --local user.name "Github Actions"
 
-      - if: ${{ steps.extract_version_name.outputs.version != '' }}
-        name: Merge to main
+      - name: Merge to main
         run: |
           git fetch --unshallow
           git checkout main
           git pull
           git merge --no-ff ${{ github.ref_name }} -m "Auto-merge from ${{ github.ref_name }} to main"
           git push
-          git tag ${{ steps.extract_version_name.outputs.version }}
-          git push origin ${{ steps.extract_version_name.outputs.version }}
+          git tag ${{ needs.ExtractVersion.outputs.version }}
+          git push origin ${{ needs.ExtractVersion.outputs.version }}
 
-      - if: ${{ steps.extract_version_name.outputs.version != '' }}
-        name: Create Release
+      - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.extract_version_name.outputs.version }}
-          release_name: ${{ steps.extract_version_name.outputs.version }}
+          tag_name: ${{ needs.ExtractVersion.outputs.version }}
+          release_name: ${{ needs.ExtractVersion.outputs.version }}
 
-      - if: ${{ steps.extract_version_name.outputs.version != '' }}
-        name: Delete branch
+      - name: Delete branch
         uses: dawidd6/action-delete-branch@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
