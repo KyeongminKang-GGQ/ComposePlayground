@@ -42,8 +42,7 @@ jobs:
         run: |
           echo ${{ steps.extract_rc_version.outputs.version }}
 
-      - if: ${{ needs.GetLatestRcTag.outputs.tag != '' }}
-        name: Calculate new RC tag
+      - name: Calculate new RC tag
         id: extract_new_rc_version
         run: |
           if '${{ steps.extract_rc_version.outputs.version != '' }}'
