@@ -49,7 +49,7 @@ jobs:
           then
             echo "::set-output name=version::$(($(echo ${{ steps.extract_rc_version.outputs.version }}) + 1))"
           else
-            echo "::set-output name=version::$(echo ${{ steps.extract_rc_version.outputs.version }})"
+            echo "::set-output name=version::1"
           fi
 
       - if: ${{ steps.extract_new_rc_version.outputs.version != '' }}
