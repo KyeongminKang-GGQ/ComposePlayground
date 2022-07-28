@@ -45,6 +45,7 @@ jobs:
       version: ${{ needs.GetLatestTag.outputs.tag }}
       status: success
       region: ${{ inputs.region }}
+      commit: $(git rev-list ${{ needs.GetLatestTag.outputs.tag }})
 
   NotifySlackToFail:
     if: ${{ failure() }}
@@ -57,3 +58,4 @@ jobs:
       version: ${{ needs.GetLatestTag.outputs.tag }}
       status: failure
       region: ${{ inputs.region }}
+      commit: $(git rev-list ${{ needs.GetLatestTag.outputs.tag }})

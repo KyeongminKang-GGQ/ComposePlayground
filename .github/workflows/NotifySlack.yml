@@ -21,7 +21,7 @@ on:
         required: true
       commit:
         type: string
-        required: true
+        required: false
 
 jobs:
   NotifySlack:
