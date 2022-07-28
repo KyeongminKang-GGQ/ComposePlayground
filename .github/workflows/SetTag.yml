@@ -16,7 +16,7 @@ jobs:
       environment: ${{ inputs.environment }}
 
   # release/hotfix 브랜치에서 RC버전 태깅
-  ExtractNewTagForStg:
+  MakeNewTagForStg:
     if: ${{ inputs.environment == 'STG' && (startsWith(github.ref_name, 'release/') || startsWith(github.ref_name, 'hotfix/')) }}
     needs: GetLatestTag
     runs-on: ubuntu-latest
@@ -93,11 +93,11 @@ jobs:
             echo ${{ steps.extract_new_tag.outputs.tag }}
 
   SetTagForStg:
-    if: ${{ needs.ExtractVersion.outputs.tag != '' }}
+    if: ${{ needs.MakeNewTagForStg.outputs.tag != '' }}
     uses: ./.github/workflows/SetTagForStg.yml
-    needs: ExtractNewTagForStg
+    needs: MakeNewTagForStg
     with:
-      tag: ${{ needs.ExtractVersion.outputs.tag }}
+      tag: ${{ needs.MakeNewTagForStg.outputs.tag }}
 
   SetTagForProd:
     uses: ./.github/workflows/SetTagForProd.yml
