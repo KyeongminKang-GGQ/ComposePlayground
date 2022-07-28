@@ -4,7 +4,6 @@ on:
     outputs:
       tag:
         value: ${{ jobs.GetLatestTag.outputs.tag }}
-
     inputs:
       environment:
         type: string
