@@ -20,7 +20,14 @@ jobs:
 
         - name: Print values
           run: |
-            echo environment = ${{ inputs.environment }} / branch = ${{ github.ref_name }} / latest_tag = $(git describe --tag --abbrev=0)
+            echo environment = ${{ inputs.environment }} / branch = ${{ github.ref_name }} / latest_tag = git describe --match "1.0.0-rc*" --abbrev=0 --tags $(git rev-list --tags --max-count=1)
+
+        - if: ${{ inputs.environment == 'STG' }}
+          name: Get latest tag
+          id: extract_latest_tag
+          run: |
+            echo "::set-output name=tag::$(git describe --match "$(echo '${{ github.ref_name }}' | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')-rc*" --abbrev=0 --tags $(git rev-list --tags --max-count=1))"
+            echo ${{ steps.extract_latest_tag.outputs.tag }}
 
         - if: ${{ inputs.environment == 'STG' }}
           name: Get latest RC tag
@@ -28,9 +35,9 @@ jobs:
           run: |
             if '${{ startsWith(github.ref_name, 'hotfix/') }}'
             then
-              echo "::set-output name=version::$(git describe --tag --abbrev=0) | sed -rn 's/[[:digit:]]{1,3}.[[:digit:]]{1,3}.[[:digit:]]{1,3}-rc.([[:digit:]]*)\+hotfix.[[:digit:]]{6}/\1/p'"
+              echo "::set-output name=version::$(echo ${{ steps.extract_latest_tag.outputs.tag }}) | sed -rn 's/[[:digit:]]{1,3}.[[:digit:]]{1,3}.[[:digit:]]{1,3}-rc.([[:digit:]]*)\+hotfix.[[:digit:]]{6}/\1/p'"
             else
-              echo "::set-output name=version::$(git describe --tag --abbrev=0) | sed -rn 's/[[:digit:]]{1,3}.[[:digit:]]{1,3}.[[:digit:]]{1,3}-rc.([[:digit:]]*)\+[[:digit:]]{6}/\1/p'"
+              echo "::set-output name=version::$(echo ${{ steps.extract_latest_tag.outputs.tag }}) | sed -rn 's/[[:digit:]]{1,3}.[[:digit:]]{1,3}.[[:digit:]]{1,3}-rc.([[:digit:]]*)\+[[:digit:]]{6}/\1/p'"
             fi
 
         - if: ${{ inputs.environment == 'STG' }}
