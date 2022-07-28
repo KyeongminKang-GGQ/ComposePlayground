@@ -16,23 +16,10 @@ jobs:
       environment: PROD
 
   GetCommitFromTag:
-    runs-on: ubuntu-latest
+    uses: ./.github/workflows/GetCommitFromTag.yml
     needs: GetLatestTag
-    outputs:
-      tag: ${{ steps.extract_latest_tag.outputs.tag }}
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-
-      - name: Get commit
-        id: get_commit
-        run: |
-          echo "::set-output name=commit::$(git rev-list ${{ needs.GetLatestTag.outputs.tag }})"
-
-      - name: Print commit
-        run: |
-          echo ${{ steps.get_commit.outputs.commit }}
+    with:
+      tag: ${{ needs.GetLatestTag.outputs.tag }}
 
   BuildAndDeployToProd:
     if: ${{ github.ref_name == 'main' }}
