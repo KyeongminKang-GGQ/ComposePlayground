@@ -15,11 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
         - uses: actions/checkout@v2
-        - uses: olegtarasov/get-tag@v2.1
-          id: tagName
           with:
-            tagRegex: "(?<package>.*)-(?<version>.*)"
-
-        - name: Show tag name
+            fetch-depth: 0
+        - name: Get tag
           run: |
-            echo ${{ steps.tagName.outputs.package }} ${{ steps.tagName.outputs.version }}
+            echo $(git describe --tag --abbrev=0) | sed -rn 's/[[:digit:]]{1,3}.[[:digit:]]{1,3}.[[:digit:]]{1,3}-rc.([[:digit:]]*)\+[[:digit:]]{6}/\1/p'
