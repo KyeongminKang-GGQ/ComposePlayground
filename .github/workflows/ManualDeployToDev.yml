@@ -25,3 +25,4 @@ jobs:
       cluster: ecsc-an2-d-ggq
       service_prefix: ecss-an2-d-ggq
       region: ${{ inputs.region }}
+      commit: ${{ github.sha }}

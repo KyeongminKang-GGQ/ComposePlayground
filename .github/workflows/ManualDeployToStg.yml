@@ -32,7 +32,7 @@ jobs:
       cluster: ecsc-an2-d-ggq
       service_prefix: ecss-an2-d-ggq
       region: ${{ inputs.region }}
-      tag: ${{ needs.GetLatestTag.outputs.tag }}
+      commit: $(git rev-list ${{ needs.GetLatestTag.outputs.tag }})
 
   NotifySlackToSuccess:
     if: ${{ success() }}

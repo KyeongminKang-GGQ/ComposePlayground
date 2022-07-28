@@ -31,7 +31,7 @@ on:
       region:
         type: string
         required: true
-      tag:
+      commit:
         type: string
         required: true
 
@@ -42,4 +42,4 @@ jobs:
       - name: 버전 정보 프린트
         run: |
           echo ${{ inputs.taskDefinition }} ${{ inputs.container }} ${{ inputs.cluster }} ${{ inputs.service_prefix }} ${{ inputs.region }} ${{ github.sha }}
-          echo $(git rev-list ${{ inputs.tag }})
+          echo ${{ inputs.commit }}
