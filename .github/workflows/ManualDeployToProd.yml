@@ -15,8 +15,28 @@ jobs:
     with:
       environment: PROD
 
+  GetCommitFromTag:
+    runs-on: ubuntu-latest
+    needs: GetLatestTag
+    outputs:
+      tag: ${{ steps.extract_latest_tag.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Get commit
+        id: get_commit
+        run: |
+          echo "::set-output name=commit::$(git rev-list ${{ needs.GetLatestTag.outputs.tag }})"
+
+      - name: Print commit
+        run: |
+          echo ${{ steps.get_commit.outputs.commit }}
+
   BuildAndDeployToProd:
     if: ${{ github.ref_name == 'main' }}
+    needs: GetCommitFromTag
     uses: ./.github/workflows/Deploy.yml
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
@@ -31,11 +51,11 @@ jobs:
       cluster: ecsc-an2-d-ggq
       service_prefix: ecss-an2-d-ggq
       region: ${{ inputs.region }}
-      commit: $(git rev-list ${{ needs.GetLatestTag.outputs.tag }})
+      commit: ${{ needs.GetCommitFromTag.outputs.commit }}
 
   NotifySlackToSuccess:
     if: ${{ success() }}
-    needs: [GetLatestTag, SetTagForProd]
+    needs: [GetCommitFromTag, BuildAndDeployToProd]
     uses: ./.github/workflows/NotifySlack.yml
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -44,11 +64,11 @@ jobs:
       version: ${{ needs.GetLatestTag.outputs.tag }}
       status: success
       region: ${{ inputs.region }}
-      commit: $(git rev-list ${{ needs.GetLatestTag.outputs.tag }})
+      commit: ${{ needs.GetCommitFromTag.outputs.commit }}
 
   NotifySlackToFail:
     if: ${{ failure() }}
-    needs: [GetLatestTag, SetTagForProd]
+    needs: [GetCommitFromTag, BuildAndDeployToProd]
     uses: ./.github/workflows/NotifySlack.yml
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -57,4 +77,4 @@ jobs:
       version: ${{ needs.GetLatestTag.outputs.tag }}
       status: failure
       region: ${{ inputs.region }}
-      commit: $(git rev-list ${{ needs.GetLatestTag.outputs.tag }})
+      commit: ${{ needs.GetCommitFromTag.outputs.commit }}
