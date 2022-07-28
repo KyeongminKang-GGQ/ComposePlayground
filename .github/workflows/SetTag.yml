@@ -97,7 +97,7 @@ jobs:
     uses: ./.github/workflows/SetTagForStg.yml
     needs: ExtractNewTagForStg
     with:
-      version: ${{ needs.ExtractVersion.outputs.tag }}
+      tag: ${{ needs.ExtractVersion.outputs.tag }}
 
   SetTagForProd:
     uses: ./.github/workflows/SetTagForProd.yml
