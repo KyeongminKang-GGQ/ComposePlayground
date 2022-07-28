@@ -11,11 +11,13 @@ on:
 
 jobs:
   GetLatestTag:
+    if: ${{ github.ref_name == 'main' }}
     uses: ./.github/workflows/GetLatestTag.yml
     with:
       environment: PROD
 
   GetCommitFromTag:
+    if: ${{ github.ref_name == 'main' }}
     uses: ./.github/workflows/GetCommitFromTag.yml
     needs: GetLatestTag
     with:
