@@ -29,9 +29,10 @@ jobs:
         - name: Print Tag Version
           id: extract_tag_version
           run: |
-            if '${{ steps.extract_rc_version.outputs.version != '' }}'
+            version=$(echo '${{ steps.extract_rc_version.outputs.version }}')
+            if '${{ version != '' }}'
             then
-              echo "::set-output name=tagVersion::$((${{ steps.extract_rc_version.outputs.version }} + 1))"
+              echo "::set-output name=tagVersion::$(($version + 1))"
             else
               echo "::set-output name=tagVersion::1"
             fi
