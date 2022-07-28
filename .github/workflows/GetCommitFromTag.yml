@@ -13,7 +13,7 @@ jobs:
   GetCommitFromTag:
     runs-on: ubuntu-latest
     outputs:
-      tag: ${{ steps.get_commit.outputs.commit }}
+      commit: ${{ steps.get_commit.outputs.commit }}
     steps:
       - uses: actions/checkout@v2
         with:
