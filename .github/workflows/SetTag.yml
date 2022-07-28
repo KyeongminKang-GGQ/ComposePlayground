@@ -33,12 +33,12 @@ jobs:
 
         - name: Print RC Version
           run: |
-            echo ${{ steps.rcRegex.outputs.regex }}
+            echo "${{ steps.rcRegex.outputs.regex }}"
 
         - uses: olegtarasov/get-tag@v2.1
           id: tagName
           with:
-            tagRegex: ${{ steps.rcRegex.outputs.regex }}  # Optional. Returns specified group text as tag name. Full tag string is returned if regex is not defined.
+            tagRegex: "'${{ steps.rcRegex.outputs.regex }}'"  # Optional. Returns specified group text as tag name. Full tag string is returned if regex is not defined.
             tagRegexGroup: 1 # Optional. Default is 1.
 
         - name: Show tag name
