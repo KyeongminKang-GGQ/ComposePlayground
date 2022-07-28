@@ -1,4 +1,4 @@
-name: ManualDeploy
+name: Deploy
 
 on:
   workflow_call:
@@ -36,10 +36,10 @@ on:
         required: true
 
 jobs:
-  ManualDeploy:
+  Deploy:
     runs-on: ubuntu-latest
     steps:
       - name: 버전 정보 프린트
         run: |
           echo ${{ inputs.taskDefinition }} ${{ inputs.container }} ${{ inputs.cluster }} ${{ inputs.service_prefix }} ${{ inputs.region }} ${{ github.sha }}
-          echo $(git rev-list ${{ tag }})
+          echo $(git rev-list ${{ inputs.tag }})
