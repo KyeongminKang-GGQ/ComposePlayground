@@ -3,25 +3,22 @@ name: SetTagForStg
 on:
   workflow_call:
     inputs:
-      identifier:
-        type: string
-        required: true
-      version:
+      tag:
         type: string
         required: true
 
 jobs:
   SetTagForStg:
-    if: ${{ inputs.identifier != '' && (startsWith(github.ref_name, 'release/') || startsWith(github.ref_name, 'hotfix/')) }}
+    if: ${{ startsWith(github.ref_name, 'release/') || startsWith(github.ref_name, 'hotfix/') }}
     runs-on: ubuntu-latest
     steps:
       - name: Start SetTagForStg Workflow
         run: |
           echo Start SetTagForStg Workflow
 
-      - if: ${{ inputs.version != '' }}
+      - if: ${{ inputs.tag != '' }}
         name: Tag commit
         uses: tvdias/github-tagger@v0.0.1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ inputs.version }}
+          tag: ${{ inputs.tag }}
