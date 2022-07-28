@@ -17,7 +17,7 @@ jobs:
 
   BuildAndDeployToProd:
     if: ${{ github.ref_name == 'main' }}
-    uses: ./.github/workflows/ManualDeploy.yml
+    uses: ./.github/workflows/Deploy.yml
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
@@ -31,6 +31,7 @@ jobs:
       cluster: ecsc-an2-d-ggq
       service_prefix: ecss-an2-d-ggq
       region: ${{ inputs.region }}
+      tag: ${{ needs.GetLatestTag.outputs.tag }}
 
   NotifySlackToSuccess:
     if: ${{ success() }}
