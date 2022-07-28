@@ -1,0 +1,46 @@
+name: SetTag
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        description: 배포 환경
+        options:
+          - STG
+          - PRD
+
+jobs:
+  ExtractRcVersion:
+    if: ${{ inputs.environment == 'STG' && (startsWith(github.ref_name, 'release/') || startsWith(github.ref_name, 'hotfix/')) }}
+    runs-on: ubuntu-latest
+    steps:
+        - uses: actions/checkout@v2
+
+        # release (STG) 의 경우 1.0.0-rc.1+123456
+        # hotfix (STG) 의 경우 1.0.0-rc.1+hotfix.123456
+        - name: Extract RC version regex
+          id: rcRegex
+          run: |
+            if '${{ startsWith(github.ref_name, 'hotfix/') }}'
+            then
+              echo "::set-output name=regex::\d{1,3}.\d{1,3}.\d{1,3}-rc.(\d+)\+hotfix.\d{6}"
+            elif '${{ startsWith(github.ref_name, 'release/') }}'
+            then
+              echo "::set-output name=regex::\d{1,3}.\d{1,3}.\d{1,3}-rc.(\d+)\+\d{6}"
+            else
+              echo ""
+            fi
+
+        - name: Print RC Version
+          run: |
+            echo ${{ steps.rcRegex.outputs.regex }}
+
+        - uses: olegtarasov/get-tag@v2.1
+          id: tagName
+          with:
+            tagRegex: ${{ steps.rcRegex.outputs.regex }}  # Optional. Returns specified group text as tag name. Full tag string is returned if regex is not defined.
+            tagRegexGroup: 1 # Optional. Default is 1.
+
+        - name: Show tag name
+          run: |
+            echo ${{ steps.tagName.outputs.tag }}
