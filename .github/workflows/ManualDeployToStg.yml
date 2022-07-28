@@ -2,42 +2,22 @@ name: ManualDeployToStg
 on:
   workflow_dispatch:
     inputs:
-      identifier:
-        type: string
-        required: false
       region:
         type: choice
-        description: AWS region
+        description: 배포할 AWS region를 선택하세요.
         options:
           - eu-west-1
           - ap-northeast-2
-      tagging:
-        type: boolean
-        description: Auto tagging / 모든 region 배포 완료 후 버전 태깅 시 꼭 체크해주세요!
 
 jobs:
-  ExtractVersion:
-    uses: ./.github/workflows/ExtractVersion.yml
-
-  SetTagForStg:
-    if: ${{ inputs.tagging }}
-    uses: ./.github/workflows/SetTagForStg.yml
-    needs: ExtractVersion
+  GetLatestTag:
+    uses: ./.github/workflows/GetLatestTag.yml
     with:
-      identifier: ${{ inputs.identifier }}
-      version: ${{ needs.ExtractVersion.outputs.version }}
-
-  Test:
-    if: ${{ always() }}
-    runs-on: ubuntu-latest
-    needs: SetTagForStg
-    steps:
-      - run: |
-          echo ${{ needs.SetTagForStg.result }}
+      environment: STG
 
   BuildAndDeployToStg:
-    if: ${{ inputs.identifier != '' && (needs.SetTagForStg.result == 'skipped' || startsWith(github.ref_name, 'release/') || inputs.identifier != '' && startsWith(github.ref_name, 'hotfix/')) }}
-    needs: SetTagForStg
+    if: ${{ startsWith(github.ref_name, 'release/') || startsWith(github.ref_name, 'hotfix/') }}
+    needs: GetLatestTag
     uses: ./.github/workflows/ManualDeploy.yml
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_STG }}
@@ -55,24 +35,24 @@ jobs:
 
   NotifySlackToSuccess:
     if: ${{ success() }}
-    needs: [ExtractVersion, BuildAndDeployToStg]
+    needs: [GetLatestTag, BuildAndDeployToStg]
     uses: ./.github/workflows/NotifySlack.yml
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     with:
       environment: STG
-      version: ${{ needs.ExtractVersion.outputs.version }}
+      version: ${{ needs.GetLatestTag.outputs.tag }}
       status: success
       region: ${{ inputs.region }}
 
   NotifySlackToFail:
     if: ${{ failure() }}
-    needs: [ExtractVersion, BuildAndDeployToStg]
+    needs: [GetLatestTag, BuildAndDeployToStg]
     uses: ./.github/workflows/NotifySlack.yml
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     with:
       environment: STG
-      version: ${{ needs.ExtractVersion.outputs.version }}
+      version: ${{ needs.GetLatestTag.outputs.tag }}
       status: failure
       region: ${{ inputs.region }}
