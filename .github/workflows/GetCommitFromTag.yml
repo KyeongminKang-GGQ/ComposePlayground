@@ -2,7 +2,7 @@ name: GetCommitFromTag
 on:
   workflow_call:
     outputs:
-      tag:
+      commit:
         value: ${{ jobs.GetCommitFromTag.outputs.commit }}
     inputs:
       tag:
