@@ -42,7 +42,7 @@ jobs:
 
   NotifySlackToSuccess:
     if: ${{ success() }}
-    needs: [GetLatestTag, BuildAndDeployToStg]
+    needs: [GetLatestTag, GetCommitFromTag, BuildAndDeployToStg]
     uses: ./.github/workflows/NotifySlack.yml
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -55,7 +55,7 @@ jobs:
 
   NotifySlackToFail:
     if: ${{ failure() }}
-    needs: [GetLatestTag, BuildAndDeployToStg]
+    needs: [GetLatestTag, GetCommitFromTag, BuildAndDeployToStg]
     uses: ./.github/workflows/NotifySlack.yml
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
