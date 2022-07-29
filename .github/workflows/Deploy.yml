@@ -18,13 +18,10 @@ on:
   workflow_call:
     secrets:
       AWS_ACCESS_KEY_ID:
-        description: "needed for access aws"
         required: true
       AWS_SECRET_ACCESS_KEY:
-        description: "needed for access aws"
         required: true
-      ECR_REGISTRY:
-        description: "needed for access aws ecr"
+      ACCOUNT_ID:
         required: true
     inputs:
       region:
@@ -64,12 +61,12 @@ jobs:
 
       # Make registry name
       # (ex) [1111111111].dkr.ecs.[ap-northeast-2].amazonaws.com
-      # 1. secret variable for registry
+      # 1. account id from secret variables
       # 2. full name of AWS region
       - name: Make registry name
         id: make_registry
         run: |
-          echo "::set-output name=name::$(echo ${{ secrets.ECR_REGISTRY }}.dkr.ecr.${{ inputs.region }}.amazonaws.com)"
+          echo "::set-output name=name::$(echo ${{ secrets.ACCOUNT_ID }}.dkr.ecr.${{ inputs.region }}.amazonaws.com)"
 
       # Make repository name
       # (ex) [ecr]-[an2]-[d]-[ggq]-[lol_auth]
@@ -106,7 +103,7 @@ jobs:
 
       - name: 정보 프린트
         run: |
-          echo ECR_REGISTRY from secret = ${{ secrets.ECR_REGISTRY }}
+          echo ECR_REGISTRY from secret = ${{ secrets.ACCOUNT_ID }}
           echo ECR_REGISTRY = ${{ steps.make_registry.outputs.name }}
           echo ECR_REPOSITORY = ${{ steps.make_repository.outputs.name }}
           echo task_definition = ${{ steps.make_task_definition.outputs.name }}
