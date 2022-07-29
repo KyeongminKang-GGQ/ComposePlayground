@@ -1,5 +1,8 @@
 name: NotifyToSlack
 
+env:
+  server_name: Auth Server
+
 on:
   workflow_call:
     secrets:
@@ -41,7 +44,7 @@ jobs:
                   {
                    "mrkdwn_in": ["text"],
                       "color": '${{ inputs.status }}' === 'success' ? 'good' : '${{ inputs.status }}' === 'failure' ? 'danger' : 'warning',
-                      "pretext": `${'${{ inputs.status }}' === 'success' ? '✅' : '⛔'} *Auth Server 배포 ${'${{ inputs.status }}' === 'success' ? '성공' : '실패'}*`,
+                      "pretext": `${'${{ inputs.status }}' === 'success' ? '✅' : '⛔'} *'${{ env.server_name }}' 배포 ${'${{ inputs.status }}' === 'success' ? '성공' : '실패'}*`,
                       "fields": [
                           {
                               "title": "repo",
