@@ -16,7 +16,7 @@ jobs:
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
-      ACCOUNT_ID: ${{ secrets.ACCOUNT_ID_DEV }}
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID_DEV }}
     with:
       region: ${{ inputs.region }}
       commit: ${{ github.sha }}

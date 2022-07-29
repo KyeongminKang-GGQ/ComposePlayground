@@ -21,7 +21,7 @@ on:
         required: true
       AWS_SECRET_ACCESS_KEY:
         required: true
-      ACCOUNT_ID:
+      AWS_ACCOUNT_ID:
         required: true
     inputs:
       region:
@@ -66,7 +66,7 @@ jobs:
       - name: Make registry name
         id: make_registry
         run: |
-          echo "::set-output name=name::$(echo ${{ secrets.ACCOUNT_ID }}.dkr.ecr.${{ inputs.region }}.amazonaws.com)"
+          echo "::set-output name=name::$(echo ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ inputs.region }}.amazonaws.com)"
 
       # Make repository name
       # (ex) [ecr]-[an2]-[d]-[ggq]-[lol_auth]
@@ -103,7 +103,7 @@ jobs:
 
       - name: 정보 프린트
         run: |
-          echo ECR_REGISTRY from secret = ${{ secrets.ACCOUNT_ID }}
+          echo ECR_REGISTRY from secret = ${{ secrets.AWS_ACCOUNT_ID }}
           echo ECR_REGISTRY = ${{ steps.make_registry.outputs.name }}
           echo ECR_REPOSITORY = ${{ steps.make_repository.outputs.name }}
           echo task_definition = ${{ steps.make_task_definition.outputs.name }}
