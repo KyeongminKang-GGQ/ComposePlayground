@@ -1,0 +1,93 @@
+name: RollbackDeploy
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        type: string
+        required: true
+        description: 배포할 tag 이름을 입력하세요.
+      region:
+        type: choice
+        required: true
+        description: 배포할 AWS region를 선택하세요.
+        options:
+          - eu-west-1
+          - ap-northeast-2
+
+jobs:
+  ExtractEnvironment:
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.get_environment.outputs.environment }}
+    steps:
+      - name: Extract Environment
+        id: get_environment
+        run: |
+          if '${{ contains(inputs.tag, 'rc') }}'
+          then
+            echo "::set-output name=environment::STG"
+          else
+            echo "::set-output name=environment::PROD"
+          fi
+
+      - name: Print environment
+        run: |
+          echo ${{ inputs.tag }} :: ${{ steps.get_environment.outputs.environment }}
+
+  GetCommitFromTag:
+    if: ${{ inputs.tag != '' }}
+    uses: ./.github/workflows/GetCommitFromTag.yml
+    with:
+      tag: ${{ inputs.tag }}
+
+  RollbackDeployToStg:
+    if: ${{ contains(inputs.tag, 'rc') && needs.GetCommitFromTag.outputs.commit != '' }}
+    needs: GetCommitFromTag
+    uses: ./.github/workflows/Deploy.yml
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_STG }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_STG }}
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID_STG }}
+    with:
+      region: ${{ inputs.region }}
+      commit: ${{ needs.GetCommitFromTag.outputs.commit }}
+      environment: STG
+
+  RollbackDeployToProd:
+    if: ${{ !contains(inputs.tag, 'rc') && needs.GetCommitFromTag.outputs.commit != '' }}
+    needs: GetCommitFromTag
+    uses: ./.github/workflows/Deploy.yml
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
+      ACCOUNT_ID: ${{ secrets.ACCOUNT_ID_PROD }}
+    with:
+      region: ${{ inputs.region }}
+      commit: ${{ needs.GetCommitFromTag.outputs.commit }}
+      environment: PROD
+
+  NotifyToSlackToSuccess:
+    if: ${{ always() && (needs.RollbackDeployToStg.result == 'success' || needs.RollbackDeployToProd.result == 'success') }}
+    needs: [ExtractEnvironment, GetCommitFromTag, RollbackDeployToStg, RollbackDeployToProd]
+    uses: ./.github/workflows/NotifyToSlack.yml
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    with:
+      environment: ${{ needs.ExtractEnvironment.outputs.environment }}
+      version: ${{ inputs.tag }}
+      status: success
+      region: ${{ inputs.region }}
+      commit: ${{ needs.GetCommitFromTag.outputs.commit }}
+
+  NotifyToSlackToFail:
+    if: ${{ always() && (needs.RollbackDeployToStg.result == 'failure' || needs.RollbackDeployToProd.result == 'failure') }}
+    needs: [ExtractEnvironment, GetCommitFromTag, RollbackDeployToStg, RollbackDeployToProd]
+    uses: ./.github/workflows/NotifyToSlack.yml
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    with:
+      environment: ${{ needs.ExtractEnvironment.outputs.environment }}
+      version: ${{ inputs.tag }}
+      status: failure
+      region: ${{ inputs.region }}
+      commit: ${{ needs.GetCommitFromTag.outputs.commit }}
