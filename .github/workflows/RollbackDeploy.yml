@@ -6,12 +6,18 @@ on:
         type: string
         required: true
         description: 배포할 tag 이름을 입력하세요.
+      region:
+        type: choice
+        required: true
+        description: 배포할 AWS region를 선택하세요.
+        options:
+          - eu-west-1
+          - ap-northeast-2
 
 jobs:
   GetCommitFromTag:
     if: ${{ inputs.tag != '' }}
     uses: ./.github/workflows/GetCommitFromTag.yml
-    needs: GetLatestTag
     with:
       tag: ${{ inputs.tag }}
 

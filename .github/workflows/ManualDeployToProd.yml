@@ -4,6 +4,7 @@ on:
     inputs:
       region:
         type: choice
+        required: true
         description: 배포할 AWS region를 선택하세요.
         options:
           - eu-west-1

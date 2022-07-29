@@ -4,6 +4,7 @@ on:
     inputs:
       region:
         type: choice
+        required: true
         description: AWS region
         options:
           - ap-northeast-2
