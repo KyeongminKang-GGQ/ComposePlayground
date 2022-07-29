@@ -50,10 +50,6 @@ jobs:
       ECR_REGISTRY: ${{ secrets.ECR_REGISTRY_STG }}
       ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_STG }}
     with:
-      # Reusable workflow에서 env를 공유할 수 없음
-      container: lol_auth
-      cluster: ecsc-an2-d-ggq
-      service_prefix: ecss-an2-d-ggq
       region: ${{ inputs.region }}
       commit: ${{ needs.GetCommitFromTag.outputs.commit }}
       environment: STG
@@ -68,10 +64,6 @@ jobs:
       ECR_REGISTRY: ${{ secrets.ECR_REGISTRY_PROD }}
       ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_PROD }}
     with:
-      # Reusable workflow에서 env를 공유할 수 없음
-      container: lol_auth
-      cluster: ecsc-an2-d-ggq
-      service_prefix: ecss-an2-d-ggq
       region: ${{ inputs.region }}
       commit: ${{ needs.GetCommitFromTag.outputs.commit }}
       environment: PROD
