@@ -58,7 +58,7 @@ jobs:
       commit: ${{ needs.GetCommitFromTag.outputs.commit }}
 
   NotifyToSlackToSuccess:
-    if: ${{ success() && always() && (needs.RollbackDeployToStg.result == 'success' || needs.RollbackDeployToProd.result == 'success') }}
+    if: ${{ always() && (needs.RollbackDeployToStg.result == 'success' || needs.RollbackDeployToProd.result == 'success') }}
     needs: [GetCommitFromTag, RollbackDeployToStg, RollbackDeployToProd]
     uses: ./.github/workflows/NotifyToSlack.yml
     secrets:
@@ -71,7 +71,7 @@ jobs:
       commit: ${{ needs.GetCommitFromTag.outputs.commit }}
 
   NotifyToSlackToFail:
-    if: ${{ failure() && always() && (needs.RollbackDeployToStg.result == 'failure' || needs.RollbackDeployToProd.result == 'failure') }}
+    if: ${{ always() && (needs.RollbackDeployToStg.result == 'failure' || needs.RollbackDeployToProd.result == 'failure') }}
     needs: [GetCommitFromTag, RollbackDeployToStg, RollbackDeployToProd]
     uses: ./.github/workflows/NotifyToSlack.yml
     secrets:
