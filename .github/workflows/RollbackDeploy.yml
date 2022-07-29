@@ -1,4 +1,9 @@
 name: RollbackDeploy
+
+# 태그이름으로 Rollback 배포 진행
+# rc 버전 태그일 경우 STG 배포
+# rc 버전 태그가 아닐 경우 PROD 배포
+
 on:
   workflow_dispatch:
     inputs:
@@ -15,6 +20,7 @@ on:
           - ap-northeast-2
 
 jobs:
+  # 입력 받은 tagging이 rc버전이면 STG 환경, 아니면 PROD 환경 배포
   ExtractEnvironment:
     runs-on: ubuntu-latest
     outputs:
@@ -34,15 +40,17 @@ jobs:
         run: |
           echo ${{ inputs.tag }} :: ${{ steps.get_environment.outputs.environment }}
 
+  # 입력 받은 tag 이름으로 배포할 commit 확인
   GetCommitFromTag:
     if: ${{ inputs.tag != '' }}
     uses: ./.github/workflows/GetCommitFromTag.yml
     with:
       tag: ${{ inputs.tag }}
 
+  # 입력 받은 tag 가 RC일 경우 STG 배포
   RollbackDeployToStg:
     if: ${{ contains(inputs.tag, 'rc') && needs.GetCommitFromTag.outputs.commit != '' }}
-    needs: GetCommitFromTag
+    needs: [GetCommitFromTag, ExtractEnvironment]
     uses: ./.github/workflows/Deploy.yml
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_STG }}
@@ -51,11 +59,12 @@ jobs:
     with:
       region: ${{ inputs.region }}
       commit: ${{ needs.GetCommitFromTag.outputs.commit }}
-      environment: STG
+      environment: ${{ needs.ExtractEnvironment.outputs.environment }}
 
+  # 입력 받은 tag 가 RC가 아닐 경우 PROD 배포
   RollbackDeployToProd:
     if: ${{ !contains(inputs.tag, 'rc') && needs.GetCommitFromTag.outputs.commit != '' }}
-    needs: GetCommitFromTag
+    needs: [GetCommitFromTag, ExtractEnvironment]
     uses: ./.github/workflows/Deploy.yml
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
@@ -64,11 +73,17 @@ jobs:
     with:
       region: ${{ inputs.region }}
       commit: ${{ needs.GetCommitFromTag.outputs.commit }}
-      environment: PROD
+      environment: ${{ needs.ExtractEnvironment.outputs.environment }}
 
   NotifyToSlackToSuccess:
     if: ${{ always() && (needs.RollbackDeployToStg.result == 'success' || needs.RollbackDeployToProd.result == 'success') }}
-    needs: [ExtractEnvironment, GetCommitFromTag, RollbackDeployToStg, RollbackDeployToProd]
+    needs:
+      [
+          ExtractEnvironment,
+          GetCommitFromTag,
+          RollbackDeployToStg,
+          RollbackDeployToProd,
+      ]
     uses: ./.github/workflows/NotifyToSlack.yml
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -81,7 +96,13 @@ jobs:
 
   NotifyToSlackToFail:
     if: ${{ always() && (needs.RollbackDeployToStg.result == 'failure' || needs.RollbackDeployToProd.result == 'failure') }}
-    needs: [ExtractEnvironment, GetCommitFromTag, RollbackDeployToStg, RollbackDeployToProd]
+    needs:
+      [
+          ExtractEnvironment,
+          GetCommitFromTag,
+          RollbackDeployToStg,
+          RollbackDeployToProd,
+      ]
     uses: ./.github/workflows/NotifyToSlack.yml
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
