@@ -42,10 +42,10 @@ jobs:
       region: ${{ inputs.region }}
       commit: ${{ needs.GetCommitFromTag.outputs.commit }}
 
-  NotifySlackToSuccess:
+  NotifyToSlackToSuccess:
     if: ${{ success() }}
     needs: [GetLatestTag, GetCommitFromTag, BuildAndDeployToStg]
-    uses: ./.github/workflows/NotifySlack.yml
+    uses: ./.github/workflows/NotifyToSlack.yml
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     with:
@@ -55,10 +55,10 @@ jobs:
       region: ${{ inputs.region }}
       commit: ${{ needs.GetCommitFromTag.outputs.commit }}
 
-  NotifySlackToFail:
+  NotifyToSlackToFail:
     if: ${{ failure() }}
     needs: [GetLatestTag, GetCommitFromTag, BuildAndDeployToStg]
-    uses: ./.github/workflows/NotifySlack.yml
+    uses: ./.github/workflows/NotifyToSlack.yml
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     with:

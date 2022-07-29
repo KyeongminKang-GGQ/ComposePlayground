@@ -1,4 +1,4 @@
-name: NotifySlack
+name: NotifyToSlack
 
 on:
   workflow_call:
@@ -24,7 +24,7 @@ on:
         required: false
 
 jobs:
-  NotifySlack:
+  NotifyToSlack:
     runs-on: ubuntu-latest
     steps:
       - name: Send slack
