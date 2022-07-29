@@ -6,14 +6,14 @@ on:
         type: string
         required: true
         description: 배포할 Region 이름
-      envrionment:
+      environment:
         type: string
         required: true
         description: 배포할 환경
 
 jobs:
   GetShortRegionName:
-    if: ${{ inputs.region != '' && inputs.envrionment != '' }}
+    if: ${{ inputs.region != '' && inputs.environment != '' }}
     runs-on: ubuntu-latest
     steps:
       - name: 버전 정보 프린트
