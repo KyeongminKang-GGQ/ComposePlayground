@@ -21,7 +21,7 @@ jobs:
         run: |
           echo ${{ inputs.environment }} | tr '[A-Z]' '[a-z]'
           echo $(echo "${{ inputs.region }}'" | sed -rn 's/([^[[:digit:]])[^[[:digit:]]+\-([^[[:digit:]])[^[[:digit:]]+\-([[:digit:]])/\1\2\3/p')
-          echo "::set-output name=name::task-definition-${${{ inputs.environment }},,}-$(echo "${{ inputs.region }}'" | sed -rn 's/([^[[:digit:]])[^[[:digit:]]+\-([^[[:digit:]])[^[[:digit:]]+\-([[:digit:]])/\1\2\3/p')"
+          echo "::set-output name=name::task-definition-$(echo ${{ inputs.environment }} | tr '[A-Z]' '[a-z]')-$(echo "${{ inputs.region }}'" | sed -rn 's/([^[[:digit:]])[^[[:digit:]]+\-([^[[:digit:]])[^[[:digit:]]+\-([[:digit:]])/\1\2\3/p')"
 
       - name: 버전 정보 프린트
         run: |
