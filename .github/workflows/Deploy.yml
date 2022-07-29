@@ -81,7 +81,7 @@ jobs:
       - name: Make repository name
         id: make_repository
         run: |
-          echo "::set-output name=name::$(echo ${{ env.repository_prefix }}-${{ steps.extract_short_region.outputs.name }}-${{ steps.extract_short_environment.outputs.name }})-${{ env.product_name }}-${{ env.container_name }})"
+          echo "::set-output name=name::$(echo ${{ env.repository_prefix }}-${{ steps.extract_short_region.outputs.name }}-${{ steps.extract_short_environment.outputs.name }}-${{ env.product_name }}-${{ env.container_name }})"
 
       # Make service name
       # (ex) [ecss]-[an2]-[d]-[ggq]-[lol_auth]
@@ -92,7 +92,7 @@ jobs:
       - name: Make service name
         id: make_service
         run: |
-          echo "::set-output name=name::$(echo ${{ env.service_prefix }}-${{ steps.extract_short_region.outputs.name }}-${{ steps.extract_short_environment.outputs.name }})-${{ env.product_name }}-${{ env.container_name }})"
+          echo "::set-output name=name::$(echo ${{ env.service_prefix }}-${{ steps.extract_short_region.outputs.name }}-${{ steps.extract_short_environment.outputs.name }}-${{ env.product_name }}-${{ env.container_name }})"
 
       # Make cluster name
       # (ex) [ecsc]-[an2]-[d]-[ggq]
@@ -102,7 +102,7 @@ jobs:
       - name: Make cluster name
         id: make_cluster
         run: |
-          echo "::set-output name=name::$(echo ${{ env.cluster_prefix }}-${{ steps.extract_short_region.outputs.name }}-${{ steps.extract_short_environment.outputs.name }})-${{ env.product_name }})"
+          echo "::set-output name=name::$(echo ${{ env.cluster_prefix }}-${{ steps.extract_short_region.outputs.name }}-${{ steps.extract_short_environment.outputs.name }}-${{ env.product_name }})"
 
       - name: 정보 프린트
         run: |
