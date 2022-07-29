@@ -79,13 +79,9 @@ jobs:
       # 4. product name code
       # 5. container name
       - name: Make repository name
-        id: make_registry
+        id: make_repository
         run: |
           echo "::set-output name=name::$(echo ${{ env.repository_prefix }}-${{ steps.extract_short_region.outputs.name }}-${{ steps.extract_short_environment.outputs.name }})-${{ env.product_name }}-${{ env.container_name }})"
-
-      - name: Print repository name
-        run: |
-          echo ${{ steps.make_registry.outputs.name }}
 
       # Make service name
       # (ex) [ecss]-[an2]-[d]-[ggq]-[lol_auth]
@@ -112,7 +108,7 @@ jobs:
         run: |
           echo ECR_REGISTRY from secret = ${{ secrets.ECR_REGISTRY }}
           echo ECR_REGISTRY = ${{ steps.make_registry.outputs.name }}
-          echo ECR_REPOSITORY = ${{ steps.make_registry.outputs.name }}
+          echo ECR_REPOSITORY = ${{ steps.make_repository.outputs.name }}
           echo task_definition = ${{ steps.make_task_definition.outputs.name }}
           echo service = ${{ steps.make_service.outputs.name }}
           echo cluster = ${{ steps.make_cluster.outputs.name }}
