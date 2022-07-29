@@ -15,6 +15,25 @@ on:
           - ap-northeast-2
 
 jobs:
+  ExtractEnvironment:
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.get_environment.outputs.environment }}
+    steps:
+      - name: Extract Environment
+        id: get_environment
+        run: |
+          if '${{ contains(inputs.tag, 'rc') }}'
+          then
+            echo "::set-output name=environment::STG"
+          else
+            echo "::set-output name=environment::PROD"
+          fi
+
+      - name: Print environment
+        run: |
+          echo ${{ inputs.tag }} :: ${{ steps.get_environment.outputs.environment }}
+
   GetCommitFromTag:
     if: ${{ inputs.tag != '' }}
     uses: ./.github/workflows/GetCommitFromTag.yml
@@ -59,12 +78,12 @@ jobs:
 
   NotifyToSlackToSuccess:
     if: ${{ always() && (needs.RollbackDeployToStg.result == 'success' || needs.RollbackDeployToProd.result == 'success') }}
-    needs: [GetCommitFromTag, RollbackDeployToStg, RollbackDeployToProd]
+    needs: [ExtractEnvironment, GetCommitFromTag, RollbackDeployToStg, RollbackDeployToProd]
     uses: ./.github/workflows/NotifyToSlack.yml
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     with:
-      environment: PROD
+      environment: ${{ needs.ExtractEnvironment.outputs.environment }}
       version: ${{ inputs.tag }}
       status: success
       region: ${{ inputs.region }}
@@ -72,12 +91,12 @@ jobs:
 
   NotifyToSlackToFail:
     if: ${{ always() && (needs.RollbackDeployToStg.result == 'failure' || needs.RollbackDeployToProd.result == 'failure') }}
-    needs: [GetCommitFromTag, RollbackDeployToStg, RollbackDeployToProd]
+    needs: [ExtractEnvironment, GetCommitFromTag, RollbackDeployToStg, RollbackDeployToProd]
     uses: ./.github/workflows/NotifyToSlack.yml
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     with:
-      environment: PROD
+      environment: ${{ needs.ExtractEnvironment.outputs.environment }}
       version: ${{ inputs.tag }}
       status: failure
       region: ${{ inputs.region }}
