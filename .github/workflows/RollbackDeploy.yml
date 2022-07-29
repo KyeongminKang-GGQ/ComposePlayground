@@ -50,13 +50,13 @@ jobs:
       ECR_REGISTRY: ${{ secrets.ECR_REGISTRY_STG }}
       ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_STG }}
     with:
-      taskDefinition: task-definition-stg.json
       # Reusable workflow에서 env를 공유할 수 없음
       container: lol_auth
       cluster: ecsc-an2-d-ggq
       service_prefix: ecss-an2-d-ggq
       region: ${{ inputs.region }}
       commit: ${{ needs.GetCommitFromTag.outputs.commit }}
+      environment: STG
 
   RollbackDeployToProd:
     if: ${{ !contains(inputs.tag, 'rc') && needs.GetCommitFromTag.outputs.commit != '' }}
@@ -68,13 +68,13 @@ jobs:
       ECR_REGISTRY: ${{ secrets.ECR_REGISTRY_PROD }}
       ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_PROD }}
     with:
-      taskDefinition: task-definition-prod.json
       # Reusable workflow에서 env를 공유할 수 없음
       container: lol_auth
       cluster: ecsc-an2-d-ggq
       service_prefix: ecss-an2-d-ggq
       region: ${{ inputs.region }}
       commit: ${{ needs.GetCommitFromTag.outputs.commit }}
+      environment: PROD
 
   NotifyToSlackToSuccess:
     if: ${{ always() && (needs.RollbackDeployToStg.result == 'success' || needs.RollbackDeployToProd.result == 'success') }}

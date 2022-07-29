@@ -1,5 +1,9 @@
 name: Deploy
 
+# AWS 배포를 위한 workflow
+# Deploy Workflow는 다른 Workflow 에서 호출한다
+# Deploy Workflow 호출 시 secrets 값과 inputs 값을 넘겨주어야 한다.
+
 on:
   workflow_call:
     secrets:
@@ -16,9 +20,6 @@ on:
         description: "needed for access aws ecr"
         required: true
     inputs:
-      taskDefinition:
-        type: string
-        required: true
       container:
         type: string
         required: true
@@ -34,11 +35,25 @@ on:
       commit:
         type: string
         required: true
+      environment:
+        type: string
+        required: true
 
 jobs:
   Deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: extract taskDefinition name
+        id: extract_name
+        run: |
+          echo ${{ inputs.environment }} | tr '[A-Z]' '[a-z]'
+          echo $(echo "${{ inputs.region }}" | sed -rn 's/([^[[:digit:]])[^[[:digit:]]+\-([^[[:digit:]])[^[[:digit:]]+\-([[:digit:]])/\1\2\3/p')
+          echo "::set-output name=name::task-definition-$(echo ${{ inputs.environment }} | tr '[A-Z]' '[a-z]')-$(echo "${{ inputs.region }}" | sed -rn 's/([^[[:digit:]])[^[[:digit:]]+\-([^[[:digit:]])[^[[:digit:]]+\-([[:digit:]])/\1\2\3/p').json"
+
+      - name: 버전 정보 프린트
+        run: |
+          echo ${{ steps.extract_name.outputs.name }}
+
       - name: 버전 정보 프린트
         run: |
           echo ${{ inputs.taskDefinition }} ${{ inputs.container }} ${{ inputs.cluster }} ${{ inputs.service_prefix }} ${{ inputs.region }} ${{ github.sha }}
