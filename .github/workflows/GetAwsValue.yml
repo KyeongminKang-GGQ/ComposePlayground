@@ -29,7 +29,7 @@ on:
       taskDefinition:
         value: ${{ jobs.GetAwsValue.outputs.taskDefinition }}
       container:
-        value: ${{ env.container_name }}
+        value: ${{ jobs.GetAwsValue.outputs.container }}
       service:
         value: ${{ jobs.GetAwsValue.outputs.service }}
       cluster:
@@ -42,8 +42,10 @@ jobs:
       registry: ${{ steps.make_registry.outputs.name }}
       repository: ${{ steps.make_repository.outputs.name }}
       taskDefinition: ${{ steps.make_task_definition.outputs.name }}
+      container: ${{ env.container_name }}
       service: ${{ steps.make_service.outputs.name }}
       cluster: ${{ steps.make_cluster.outputs.name }}
+
     steps:
       - name: get AWS account id
         id: get_account_id
