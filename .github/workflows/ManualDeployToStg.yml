@@ -5,13 +5,13 @@ name: ManualDeployToStg
 
 on:
   workflow_dispatch:
-    environment:
-      type: choice
-      required: true
-      description: 배포 환경 (수정 불가)
-      options:
-        - STG
     inputs:
+      environment:
+        type: choice
+        required: true
+        description: 배포 환경 (수정 불가)
+        options:
+          - STG
       region:
         type: choice
         required: true
