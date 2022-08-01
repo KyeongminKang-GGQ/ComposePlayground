@@ -13,7 +13,7 @@ env:
   account_id_prod: 71637104407
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       region:
         type: string
@@ -21,29 +21,29 @@ on:
       environment:
         type: string
         required: true
-#    outputs:
-#      registry:
-#        value: ${{ jobs.GetAwsValue.outputs.registry }}
-#      repository:
-#        value: ${{ jobs.GetAwsValue.outputs.repository }}
-#      taskDefinition:
-#        value: ${{ jobs.GetAwsValue.outputs.taskDefinition }}
-#      container:
-#        value: ${{ env.container_name }}
-#      service:
-#        value: ${{ jobs.GetAwsValue.outputs.service }}
-#      cluster:
-#        value: ${{ jobs.GetAwsValue.outputs.cluster }}
+    outputs:
+      registry:
+        value: ${{ jobs.GetAwsValue.outputs.registry }}
+      repository:
+        value: ${{ jobs.GetAwsValue.outputs.repository }}
+      taskDefinition:
+        value: ${{ jobs.GetAwsValue.outputs.taskDefinition }}
+      container:
+        value: ${{ env.container_name }}
+      service:
+        value: ${{ jobs.GetAwsValue.outputs.service }}
+      cluster:
+        value: ${{ jobs.GetAwsValue.outputs.cluster }}
 
 jobs:
   GetAwsValue:
     runs-on: ubuntu-latest
-#    outputs:
-#      registry: ${{ steps.make_registry.outputs.name }}
-#      repository: ${{ steps.make_repository.outputs.name }}
-#      taskDefinition: ${{ steps.make_task_definition.outputs.name }}
-#      service: ${{ steps.make_service.outputs.name }}
-#      cluster: ${{ steps.make_cluster.outputs.name }}
+    outputs:
+      registry: ${{ steps.make_registry.outputs.name }}
+      repository: ${{ steps.make_repository.outputs.name }}
+      taskDefinition: ${{ steps.make_task_definition.outputs.name }}
+      service: ${{ steps.make_service.outputs.name }}
+      cluster: ${{ steps.make_cluster.outputs.name }}
     steps:
       - name: get AWS account id
         id: get_account_id
