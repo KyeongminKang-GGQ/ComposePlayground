@@ -1,18 +1,8 @@
 name: Deploy
 
-# AWS 배포를 위한 workflow
+# AWS 배포를 위한 Workflow
 # Deploy Workflow는 다른 Workflow 에서 호출한다
 # Deploy Workflow 호출 시 secrets 값과 inputs 값을 넘겨주어야 한다.
-
-# 개발자는 아래 env 값을 확인하고 수정해주어야 한다.
-# region code와 environment code는 Workflow에서 생성해준다
-
-env:
-  service_prefix: ecss
-  cluster_prefix: ecsc
-  container_name: lol_auth
-  product_name: ggq
-  repository_prefix: ecr
 
 on:
   workflow_call:
@@ -21,16 +11,29 @@ on:
         required: true
       AWS_SECRET_ACCESS_KEY:
         required: true
-      AWS_ACCOUNT_ID:
-        required: true
     inputs:
-      region:
-        type: string
-        required: true
       commit:
         type: string
         required: true
-      environment:
+      region:
+        type: string
+        required: true
+      registry:
+        type: string
+        required: true
+      repository:
+        type: string
+        required: true
+      taskDefinition:
+        type: string
+        required: true
+      container:
+        type: string
+        required: true
+      service:
+        type: string
+        required: true
+      cluster:
         type: string
         required: true
 
@@ -38,75 +41,12 @@ jobs:
   Deploy:
     runs-on: ubuntu-latest
     steps:
-      # Extract 'DEV', 'STG', 'PROD' -> 'd', 's', 'p'
-      - name: extract short environment name
-        id: extract_short_environment
+      - name: Print information
         run: |
-          echo "::set-output name=name::$(echo "${{ inputs.environment }}" | tr '[A-Z]' '[a-z]' | sed -rn 's/([^[[:digit:]])[^[[:digit:]]*/\1/p')"
-
-      # Extract 'ap-northeast-2', 'eu-west-1' -> 'an2', 'ew1'
-      - name: extract short region name
-        id: extract_short_region
-        run: |
-          echo ${{ inputs.environment }} | tr '[A-Z]' '[a-z]'
-          echo "::set-output name=name::$(echo "${{ inputs.region }}" | sed -rn 's/([^[[:digit:]])[^[[:digit:]]+\-([^[[:digit:]])[^[[:digit:]]+\-([[:digit:]])/\1\2\3/p')"
-
-      # Make taskDefinition name (ex) task-definition-[dev]-[an2].json
-      - name: Make taskDefinition name
-        id: make_task_definition
-        run: |
-          echo ${{ inputs.environment }} | tr '[A-Z]' '[a-z]'
-          echo ${{ steps.extract_short_region.outputs.name }}
-          echo "::set-output name=name::task-definition-$(echo ${{ inputs.environment }} | tr '[A-Z]' '[a-z]')-${{ steps.extract_short_region.outputs.name }}.json"
-
-      # Make registry name
-      # (ex) [1111111111].dkr.ecs.[ap-northeast-2].amazonaws.com
-      # 1. account id from secret variables
-      # 2. full name of AWS region
-      - name: Make registry name
-        id: make_registry
-        run: |
-          echo "::set-output name=name::$(echo ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ inputs.region }}.amazonaws.com)"
-
-      # Make repository name
-      # (ex) [ecr]-[an2]-[d]-[ggq]-[lol_auth]
-      # 1. repository_prefix
-      # 2. short name of AWS region
-      # 3. short name of environment
-      # 4. product name code
-      # 5. container name
-      - name: Make repository name
-        id: make_repository
-        run: |
-          echo "::set-output name=name::$(echo ${{ env.repository_prefix }}-${{ steps.extract_short_region.outputs.name }}-${{ steps.extract_short_environment.outputs.name }}-${{ env.product_name }}-${{ env.container_name }})"
-
-      # Make service name
-      # (ex) [ecss]-[an2]-[d]-[ggq]-[lol_auth]
-      # 1. service_prefix
-      # 2. short name of environment
-      # 3. product name code
-      # 4. container name
-      - name: Make service name
-        id: make_service
-        run: |
-          echo "::set-output name=name::$(echo ${{ env.service_prefix }}-${{ steps.extract_short_region.outputs.name }}-${{ steps.extract_short_environment.outputs.name }}-${{ env.product_name }}-${{ env.container_name }})"
-
-      # Make cluster name
-      # (ex) [ecsc]-[an2]-[d]-[ggq]
-      # 1. cluster_prefix
-      # 2. short name of environment
-      # 3. product name code
-      - name: Make cluster name
-        id: make_cluster
-        run: |
-          echo "::set-output name=name::$(echo ${{ env.cluster_prefix }}-${{ steps.extract_short_region.outputs.name }}-${{ steps.extract_short_environment.outputs.name }}-${{ env.product_name }})"
-
-      - name: 정보 프린트
-        run: |
-          echo ECR_REGISTRY from secret = ${{ secrets.AWS_ACCOUNT_ID }}
-          echo ECR_REGISTRY = ${{ steps.make_registry.outputs.name }}
-          echo ECR_REPOSITORY = ${{ steps.make_repository.outputs.name }}
-          echo task_definition = ${{ steps.make_task_definition.outputs.name }}
-          echo service = ${{ steps.make_service.outputs.name }}
-          echo cluster = ${{ steps.make_cluster.outputs.name }}
+          echo ECR_REGISTRY = ${{ inputs.registry }}
+          echo ECR_REPOSITORY = ${{ inputs.repository }}
+          echo task_definition = ${{ inputs.taskDefinition }}
+          echo container = ${{ inputs.container }}
+          echo service = ${{ inputs.service }}
+          echo cluster = ${{ inputs.cluster }}
           echo ${{ github.sha }} / ${{ inputs.commit }}

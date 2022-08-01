@@ -47,46 +47,55 @@ jobs:
     with:
       tag: ${{ inputs.tag }}
 
+  # 배포 시 필요한 값 가져오기
+  GetAwsValue:
+    uses: ./.github/workflows/GetAwsValue.yml
+    needs: [ExtractEnvironment]
+    with:
+      environment: ${{ steps.get_environment.outputs.environment }}
+      region: ${{ inputs.region }}
+
   # 입력 받은 tag 가 RC일 경우 STG 배포
   RollbackDeployToStg:
     if: ${{ contains(inputs.tag, 'rc') && needs.GetCommitFromTag.outputs.commit != '' }}
-    needs: [GetCommitFromTag, ExtractEnvironment]
+    needs: [GetCommitFromTag, ExtractEnvironment, GetAwsValue]
     uses: ./.github/workflows/Deploy.yml
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_STG }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_STG }}
-      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID_STG }}
     with:
       region: ${{ inputs.region }}
       commit: ${{ needs.GetCommitFromTag.outputs.commit }}
-      environment: ${{ needs.ExtractEnvironment.outputs.environment }}
+      registry: ${{ needs.GetAwsValue.outputs.registry }}
+      repository: ${{ needs.GetAwsValue.outputs.repository }}
+      taskDefinition: ${{ needs.GetAwsValue.outputs.taskDefinition }}
+      container: ${{ needs.GetAwsValue.outputs.container }}
+      service: ${{ needs.GetAwsValue.outputs.service }}
+      cluster: ${{ needs.GetAwsValue.outputs.cluster }}
 
   # 입력 받은 tag 가 RC가 아닐 경우 PROD 배포
   RollbackDeployToProd:
     if: ${{ !contains(inputs.tag, 'rc') && needs.GetCommitFromTag.outputs.commit != '' }}
-    needs: [GetCommitFromTag, ExtractEnvironment]
+    needs: [GetCommitFromTag, ExtractEnvironment, GetAwsValue]
     uses: ./.github/workflows/Deploy.yml
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
-      AWS_ACCOUNT_ID: ${{ secrets.ACCOUNT_ID_PROD }}
     with:
       region: ${{ inputs.region }}
       commit: ${{ needs.GetCommitFromTag.outputs.commit }}
-      environment: ${{ needs.ExtractEnvironment.outputs.environment }}
+      registry: ${{ needs.GetAwsValue.outputs.registry }}
+      repository: ${{ needs.GetAwsValue.outputs.repository }}
+      taskDefinition: ${{ needs.GetAwsValue.outputs.taskDefinition }}
+      container: ${{ needs.GetAwsValue.outputs.container }}
+      service: ${{ needs.GetAwsValue.outputs.service }}
+      cluster: ${{ needs.GetAwsValue.outputs.cluster }}
 
   NotifyToSlackToSuccess:
     if: ${{ always() && (needs.RollbackDeployToStg.result == 'success' || needs.RollbackDeployToProd.result == 'success') }}
-    needs:
-      [
-          ExtractEnvironment,
-          GetCommitFromTag,
-          RollbackDeployToStg,
-          RollbackDeployToProd,
-      ]
+    needs: [ExtractEnvironment, GetCommitFromTag, RollbackDeployToStg, RollbackDeployToProd]
     uses: ./.github/workflows/NotifyToSlack.yml
-    secrets:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    secrets: inherit
     with:
       environment: ${{ needs.ExtractEnvironment.outputs.environment }}
       version: ${{ inputs.tag }}
@@ -96,16 +105,9 @@ jobs:
 
   NotifyToSlackToFail:
     if: ${{ always() && (needs.RollbackDeployToStg.result == 'failure' || needs.RollbackDeployToProd.result == 'failure') }}
-    needs:
-      [
-          ExtractEnvironment,
-          GetCommitFromTag,
-          RollbackDeployToStg,
-          RollbackDeployToProd,
-      ]
+    needs: [ExtractEnvironment, GetCommitFromTag, RollbackDeployToStg, RollbackDeployToProd]
     uses: ./.github/workflows/NotifyToSlack.yml
-    secrets:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    secrets: inherit
     with:
       environment: ${{ needs.ExtractEnvironment.outputs.environment }}
       version: ${{ inputs.tag }}
