@@ -1,0 +1,131 @@
+name: GetAwsValue
+
+# AWS 배포를 위해 필요한 값을 구하는 Workflow
+# 개발자는 아래 env 값을 확인하고 필요 시 수정해주어야 한다.
+env:
+  service_prefix: ecss
+  cluster_prefix: ecsc
+  container_name: lol_auth
+  product_name: ggq
+  repository_prefix: ecr
+  account_id_dev: 118166980108
+  account_id_stg: 666644083535
+  account_id_prod: 71637104407
+
+on:
+  workflow_dispatch:
+    inputs:
+      region:
+        type: string
+        required: true
+      environment:
+        type: string
+        required: true
+    outputs:
+      registry:
+        value: ${{ jobs.GetAwsValue.outputs.registry }}
+      repository:
+        value: ${{ jobs.GetAwsValue.outputs.repository }}
+      taskDefinition:
+        value: ${{ jobs.GetAwsValue.outputs.taskDefinition }}
+      container:
+        value: ${{ env.container_name }}
+      service:
+        value: ${{ jobs.GetAwsValue.outputs.service }}
+      cluster:
+        value: ${{ jobs.GetAwsValue.outputs.cluster }}
+
+jobs:
+  GetAwsValue:
+    runs-on: ubuntu-latest
+    outputs:
+      registry: ${{ steps.make_registry.outputs.name }}
+      repository: ${{ steps.make_repository.outputs.name }}
+      taskDefinition: ${{ steps.make_task_definition.outputs.name }}
+      service: ${{ steps.make_service.outputs.name }}
+      cluster: ${{ steps.make_cluster.outputs.name }}
+    steps:
+      - name: get AWS account id
+        id: get_account_id
+        run: |
+          if '${{ inputs.environment == 'PROD' }}'
+          then
+            echo "::set-output name=id::$(echo ${{ env.account_id_prod }})"
+          elif '${{ inputs.environment == 'STG' }}'
+          then
+            echo "::set-output name=id::$(echo ${{ env.account_id_stg }})"
+          else
+            echo "::set-output name=id::$(echo ${{ env.account_id_dev }})"
+          fi
+
+      # Extract 'DEV', 'STG', 'PROD' -> 'd', 's', 'p'
+      - name: extract short environment name
+        id: extract_short_environment
+        run: |
+          echo "::set-output name=name::$(echo "${{ inputs.environment }}" | tr '[A-Z]' '[a-z]' | sed -rn 's/([^[[:digit:]])[^[[:digit:]]*/\1/p')"
+
+      # Extract 'ap-northeast-2', 'eu-west-1' -> 'an2', 'ew1'
+      - name: extract short region name
+        id: extract_short_region
+        run: |
+          echo ${{ inputs.environment }} | tr '[A-Z]' '[a-z]'
+          echo "::set-output name=name::$(echo "${{ inputs.region }}" | sed -rn 's/([^[[:digit:]])[^[[:digit:]]+\-([^[[:digit:]])[^[[:digit:]]+\-([[:digit:]])/\1\2\3/p')"
+
+      # Make taskDefinition name (ex) task-definition-[dev]-[an2].json
+      - name: Make taskDefinition name
+        id: make_task_definition
+        run: |
+          echo ${{ inputs.environment }} | tr '[A-Z]' '[a-z]'
+          echo ${{ steps.extract_short_region.outputs.name }}
+          echo "::set-output name=name::task-definition-$(echo ${{ inputs.environment }} | tr '[A-Z]' '[a-z]')-${{ steps.extract_short_region.outputs.name }}.json"
+
+      # Make registry name
+      # (ex) [1111111111].dkr.ecs.[ap-northeast-2].amazonaws.com
+      # 1. account id from secret variables
+      # 2. full name of AWS region
+      - name: Make registry name
+        id: make_registry
+        run: |
+          echo "::set-output name=name::$(echo ${{ steps.get_account_id.outputs.id }}.dkr.ecr.${{ inputs.region }}.amazonaws.com)"
+
+      # Make repository name
+      # (ex) [ecr]-[an2]-[d]-[ggq]-[lol_auth]
+      # 1. repository_prefix
+      # 2. short name of AWS region
+      # 3. short name of environment
+      # 4. product name code
+      # 5. container name
+      - name: Make repository name
+        id: make_repository
+        run: |
+          echo "::set-output name=name::$(echo ${{ env.repository_prefix }}-${{ steps.extract_short_region.outputs.name }}-${{ steps.extract_short_environment.outputs.name }}-${{ env.product_name }}-${{ env.container_name }})"
+
+      # Make service name
+      # (ex) [ecss]-[an2]-[d]-[ggq]-[lol_auth]
+      # 1. service_prefix
+      # 2. short name of environment
+      # 3. product name code
+      # 4. container name
+      - name: Make service name
+        id: make_service
+        run: |
+          echo "::set-output name=name::$(echo ${{ env.service_prefix }}-${{ steps.extract_short_region.outputs.name }}-${{ steps.extract_short_environment.outputs.name }}-${{ env.product_name }}-${{ env.container_name }})"
+
+      # Make cluster name
+      # (ex) [ecsc]-[an2]-[d]-[ggq]
+      # 1. cluster_prefix
+      # 2. short name of environment
+      # 3. product name code
+      - name: Make cluster name
+        id: make_cluster
+        run: |
+          echo "::set-output name=name::$(echo ${{ env.cluster_prefix }}-${{ steps.extract_short_region.outputs.name }}-${{ steps.extract_short_environment.outputs.name }}-${{ env.product_name }})"
+
+      - name: Print information
+        run: |
+          echo ECR_REGISTRY = ${{ steps.make_registry.outputs.name }}
+          echo ECR_REPOSITORY = ${{ steps.make_repository.outputs.name }}
+          echo task_definition = ${{ steps.make_task_definition.outputs.name }}
+          echo service = ${{ steps.make_service.outputs.name }}
+          echo cluster = ${{ steps.make_cluster.outputs.name }}
+          echo ${{ github.sha }} / ${{ inputs.commit }}
