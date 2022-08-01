@@ -1,34 +1,22 @@
-name: ManualDeployToDev
+name: DeployToDev
 
-# feature 브랜치에서 DEV 환경에 배포 필요 시 수동으로 Workflow를 수행한다.
-# 대상 feature 브랜치의 최신 commit으로 배포
+# develop 브랜치에 commit이 push 되면 자동으로 DEV 환경으로 배포된다.
+# develop 브랜치에 push된 commit으로 배포
 
 on:
-  workflow_dispatch:
-    inputs:
-      environment:
-        type: choice
-        required: true
-        description: 배포 환경 (수정 불가)
-        options:
-          - DEV
-      region:
-        type: choice
-        required: true
-        description: AWS region
-        options:
-          # DEV환경은 [ap-northeast-2] 로 고정
-          - ap-northeast-2
+  push:
+    branches:
+      - "develop**"
 
 jobs:
   GetAwsValue:
     uses: ./.github/workflows/GetAwsValue.yml
     with:
-      environment: ${{ inputs.environment }}
-      region: ${{ inputs.region }}
+      # DEV환경은 [ap-northeast-2] 로 고정
+      environment: DEV
+      region: ap-northeast-2
 
   BuildAndDeployToDev:
-    if: ${{ startsWith(github.ref_name, 'feature/') }}
     uses: ./.github/workflows/Deploy.yml
     needs: GetAwsValue
     secrets:
@@ -36,7 +24,7 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
     with:
       commit: ${{ github.sha }}
-      region: ${{ inputs.region }}
+      region: ${{ needs.GetAwsValue.outputs.region }}
       registry: ${{ needs.GetAwsValue.outputs.registry }}
       repository: ${{ needs.GetAwsValue.outputs.repository }}
       taskDefinition: ${{ needs.GetAwsValue.outputs.taskDefinition }}
