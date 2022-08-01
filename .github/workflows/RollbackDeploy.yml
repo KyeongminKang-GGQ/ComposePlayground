@@ -52,13 +52,13 @@ jobs:
     uses: ./.github/workflows/GetAwsValue.yml
     needs: [ExtractEnvironment]
     with:
-      environment: ${{ steps.get_environment.outputs.environment }}
+      environment: ${{ needs.ExtractEnvironment.outputs.environment }}
       region: ${{ inputs.region }}
 
   # 입력 받은 tag 가 RC일 경우 STG 배포
   RollbackDeployToStg:
     if: ${{ contains(inputs.tag, 'rc') && needs.GetCommitFromTag.outputs.commit != '' }}
-    needs: [GetCommitFromTag, ExtractEnvironment, GetAwsValue]
+    needs: [GetCommitFromTag, GetAwsValue]
     uses: ./.github/workflows/Deploy.yml
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_STG }}
@@ -76,7 +76,7 @@ jobs:
   # 입력 받은 tag 가 RC가 아닐 경우 PROD 배포
   RollbackDeployToProd:
     if: ${{ !contains(inputs.tag, 'rc') && needs.GetCommitFromTag.outputs.commit != '' }}
-    needs: [GetCommitFromTag, ExtractEnvironment, GetAwsValue]
+    needs: [GetCommitFromTag, GetAwsValue]
     uses: ./.github/workflows/Deploy.yml
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
