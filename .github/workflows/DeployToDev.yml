@@ -3,11 +3,6 @@ name: DeployToDev
 # develop 브랜치에 commit이 push 되면 자동으로 DEV 환경으로 배포된다.
 # develop 브랜치에 push된 commit으로 배포
 
-env:
-  # DEV환경은 [ap-northeast-2] 로 고정
-  region: ap-northeast-2
-  environment: DEV
-
 on:
   push:
     branches:
@@ -17,8 +12,9 @@ jobs:
   GetAwsValue:
     uses: ./.github/workflows/GetAwsValue.yml
     with:
-      environment: ${{ env.environment }}
-      region: ${{ env.region }}
+      # DEV환경은 [ap-northeast-2] 로 고정
+      environment: DEV
+      region: ap-northeast-2
 
   BuildAndDeployToDev:
     uses: ./.github/workflows/Deploy.yml
@@ -27,8 +23,8 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
     with:
-      region: ${{ env.region }}
       commit: ${{ github.sha }}
+      region: ${{ needs.GetAwsValue.outputs.region }}
       registry: ${{ needs.GetAwsValue.outputs.registry }}
       repository: ${{ needs.GetAwsValue.outputs.repository }}
       taskDefinition: ${{ needs.GetAwsValue.outputs.taskDefinition }}

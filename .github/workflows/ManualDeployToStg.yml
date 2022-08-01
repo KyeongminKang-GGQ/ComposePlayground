@@ -3,11 +3,14 @@ name: ManualDeployToStg
 # release/hotfix 브랜치에서 가장 최근의 rc 버전 TAG로 AWS 배포 하는 Workflow
 # BuildAndDeployToStg job에서 container, cluster, service_prefix 를 변경하여 사용하도록 한다.
 
-env:
-  environment: STG
-
 on:
   workflow_dispatch:
+    environment:
+      type: choice
+      required: true
+      description: 배포 환경 (수정 불가)
+      options:
+        - STG
     inputs:
       region:
         type: choice
@@ -23,7 +26,7 @@ jobs:
     if: ${{ startsWith(github.ref_name, 'release/') || startsWith(github.ref_name, 'hotfix/') }}
     uses: ./.github/workflows/GetLatestTag.yml
     with:
-      environment: ${{ env.environment }}
+      environment: ${{ inputs.environment }}
 
   # tag이름으로 배포할 commit 확인
   GetCommitFromTag:
@@ -37,7 +40,7 @@ jobs:
   GetAwsValue:
     uses: ./.github/workflows/GetAwsValue.yml
     with:
-      environment: ${{ env.environment }}
+      environment: ${{ inputs.environment }}
       region: ${{ inputs.region }}
 
   # commit id로 STG 배포
@@ -62,10 +65,9 @@ jobs:
     if: ${{ success() }}
     needs: [GetLatestTag, GetCommitFromTag, BuildAndDeployToStg]
     uses: ./.github/workflows/NotifyToSlack.yml
-    secrets:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    secrets: inherit
     with:
-      environment: ${{ env.environment }}
+      environment: ${{ inputs.environment }}
       version: ${{ needs.GetLatestTag.outputs.tag }}
       status: success
       region: ${{ inputs.region }}
@@ -75,10 +77,9 @@ jobs:
     if: ${{ failure() }}
     needs: [GetLatestTag, GetCommitFromTag, BuildAndDeployToStg]
     uses: ./.github/workflows/NotifyToSlack.yml
-    secrets:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    secrets: inherit
     with:
-      environment: ${{ env.environment }}
+      environment: ${{ inputs.environment }}
       version: ${{ needs.GetLatestTag.outputs.tag }}
       status: failure
       region: ${{ inputs.region }}

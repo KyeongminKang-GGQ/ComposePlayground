@@ -52,8 +52,8 @@ jobs:
     uses: ./.github/workflows/GetAwsValue.yml
     needs: [ExtractEnvironment]
     with:
-    environment: ${{ steps.get_environment.outputs.environment }}
-    region: ${{ inputs.region }}
+      environment: ${{ steps.get_environment.outputs.environment }}
+      region: ${{ inputs.region }}
 
   # 입력 받은 tag 가 RC일 경우 STG 배포
   RollbackDeployToStg:
@@ -95,8 +95,7 @@ jobs:
     if: ${{ always() && (needs.RollbackDeployToStg.result == 'success' || needs.RollbackDeployToProd.result == 'success') }}
     needs: [ExtractEnvironment, GetCommitFromTag, RollbackDeployToStg, RollbackDeployToProd]
     uses: ./.github/workflows/NotifyToSlack.yml
-    secrets:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    secrets: inherit
     with:
       environment: ${{ needs.ExtractEnvironment.outputs.environment }}
       version: ${{ inputs.tag }}
@@ -108,8 +107,7 @@ jobs:
     if: ${{ always() && (needs.RollbackDeployToStg.result == 'failure' || needs.RollbackDeployToProd.result == 'failure') }}
     needs: [ExtractEnvironment, GetCommitFromTag, RollbackDeployToStg, RollbackDeployToProd]
     uses: ./.github/workflows/NotifyToSlack.yml
-    secrets:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    secrets: inherit
     with:
       environment: ${{ needs.ExtractEnvironment.outputs.environment }}
       version: ${{ inputs.tag }}

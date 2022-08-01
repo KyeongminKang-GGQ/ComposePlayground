@@ -12,10 +12,10 @@ on:
       AWS_SECRET_ACCESS_KEY:
         required: true
     inputs:
-      region:
+      commit:
         type: string
         required: true
-      commit:
+      region:
         type: string
         required: true
       registry:

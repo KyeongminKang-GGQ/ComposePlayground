@@ -35,6 +35,10 @@ on:
         value: ${{ jobs.GetAwsValue.outputs.service }}
       cluster:
         value: ${{ jobs.GetAwsValue.outputs.cluster }}
+      region:
+        value: ${{ jobs.GetAwsValue.outputs.region }}
+      environment:
+        value: ${{ jobs.GetAwsValue.outputs.environment }}
 
 jobs:
   GetAwsValue:
@@ -46,6 +50,8 @@ jobs:
       container: ${{ env.container_name }}
       service: ${{ steps.make_service.outputs.name }}
       cluster: ${{ steps.make_cluster.outputs.name }}
+      region: ${{ inputs.region }}
+      environment: ${{ inputs.environment }}
 
     steps:
       - name: get AWS account id
