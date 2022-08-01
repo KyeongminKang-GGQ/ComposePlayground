@@ -1,4 +1,10 @@
 name: ManualDeployToProd
+
+# Main 브랜치에서 가장 최근의 TAG로 AWS 배포 하는 Workflow
+
+env:
+  environment: PROD
+
 on:
   workflow_dispatch:
     inputs:
@@ -11,12 +17,14 @@ on:
           - ap-northeast-2
 
 jobs:
+  # Main 브랜치에서 가장 최근의 TAG를 가져온다
   GetLatestTag:
     if: ${{ github.ref_name == 'main' }}
     uses: ./.github/workflows/GetLatestTag.yml
     with:
-      environment: PROD
+      environment: ${{ env.environment }}
 
+  # tag이름으로 배포할 commit 확인
   GetCommitFromTag:
     if: ${{ github.ref_name == 'main' }}
     uses: ./.github/workflows/GetCommitFromTag.yml
@@ -24,9 +32,17 @@ jobs:
     with:
       tag: ${{ needs.GetLatestTag.outputs.tag }}
 
+  # 배포 시 필요한 값 가져오기
+  GetAwsValue:
+    uses: ./.github/workflows/GetAwsValue.yml
+    with:
+      environment: ${{ env.environment }}
+      region: ${{ inputs.region }}
+
+  # commit id로 PROD 배포
   BuildAndDeployToProd:
     if: ${{ github.ref_name == 'main' }}
-    needs: GetCommitFromTag
+    needs: [GetCommitFromTag, GetAwsValue]
     uses: ./.github/workflows/Deploy.yml
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
@@ -35,7 +51,12 @@ jobs:
     with:
       region: ${{ inputs.region }}
       commit: ${{ needs.GetCommitFromTag.outputs.commit }}
-      environment: PROD
+      registry: ${{ needs.GetAwsValue.outputs.registry }}
+      repository: ${{ needs.GetAwsValue.outputs.repository }}
+      taskDefinition: ${{ needs.GetAwsValue.outputs.taskDefinition }}
+      container: ${{ needs.GetAwsValue.outputs.container }}
+      service: ${{ needs.GetAwsValue.outputs.service }}
+      cluster: ${{ needs.GetAwsValue.outputs.cluster }}
 
   NotifyToSlackToSuccess:
     if: ${{ success() }}
@@ -44,7 +65,7 @@ jobs:
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     with:
-      environment: PROD
+      environment: ${{ env.environment }}
       version: ${{ needs.GetLatestTag.outputs.tag }}
       status: success
       region: ${{ inputs.region }}
@@ -57,7 +78,7 @@ jobs:
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     with:
-      environment: PROD
+      environment: ${{ env.environment }}
       version: ${{ needs.GetLatestTag.outputs.tag }}
       status: failure
       region: ${{ inputs.region }}

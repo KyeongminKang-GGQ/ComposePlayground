@@ -2,6 +2,7 @@ name: GetAwsValue
 
 # AWS 배포를 위해 필요한 값을 구하는 Workflow
 # 개발자는 아래 env 값을 확인하고 필요 시 수정해주어야 한다.
+
 env:
   service_prefix: ecss
   cluster_prefix: ecsc
@@ -130,4 +131,3 @@ jobs:
           echo task_definition = ${{ steps.make_task_definition.outputs.name }}
           echo service = ${{ steps.make_service.outputs.name }}
           echo cluster = ${{ steps.make_cluster.outputs.name }}
-          echo ${{ github.sha }} / ${{ inputs.commit }}
