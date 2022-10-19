@@ -16,13 +16,13 @@ on:
         required: true
       environment:
         type: string
-        required: true
+        required: false
       status:
         type: string
         required: true
       region:
         type: string
-        required: true
+        required: false
       commit:
         type: string
         required: false
@@ -31,17 +31,74 @@ on:
         required: false
 
 jobs:
-  NotifyToSlack:
+  NotifyDeployResult:
     runs-on: ubuntu-latest
     steps:
-      - name: Send SetTag Result
+      - name: Send Deploy Result
+        uses: 8398a7/action-slack@v3
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
+        if: ${{ inputs.additionalInfo == '' && always() }}
+        with:
+          status: custom
+          fields: all
+          custom_payload: |
+            {
+              "attachments": [
+                  {
+                   "mrkdwn_in": ["text"],
+                      "color": '${{ inputs.status }}' === 'success' ? 'good' : '${{ inputs.status }}' === 'failure' ? 'danger' : 'warning',
+                      "pretext": `${'${{ inputs.status }}' === 'success' ? '✅' : '⛔'} *${{ env.server_name }} 배포 ${'${{ inputs.status }}' === 'success' ? '성공' : '실패'}*`,
+                      "fields": [
+                          {
+                              "title": "repo",
+                              "value": `${process.env.AS_REPO}`,
+                              "short": true
+                          },
+                          {
+                              "title": "version",
+                              "value": `${'${{ inputs.version }}'}`,
+                              "short": true
+                          },
+                          {
+                             "title": "release commit",
+                             "value": `${'${{ inputs.commit }}'}`,
+                             "short": true
+                          },
+                          {
+                             "title": "environment",
+                             "value": `${'${{ inputs.environment }}'}`,
+                             "short": true
+                          },
+                          {
+                             "title": "author",
+                             "value": `${process.env.AS_AUTHOR}`,
+                             "short": true
+                          },
+                          {
+                             "title": "region",
+                             "value": `${'${{ inputs.region }}'}`,
+                             "short": true
+                          },
+                      ],
+                      "footer": `@${process.env.AS_REF} / ${process.env.AS_COMMIT}`,
+                      "footer_icon": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+                  }
+              ]
+            }
+          author_name: GGQ bot
+
+  NotifyTaggingResult:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Tagging Result
         uses: 8398a7/action-slack@v3
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
         if: ${{ inputs.additionalInfo != '' && inputs.status == 'failure' }}
         with:
           status: custom
-          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+          fields: all
           custom_payload: |
             {
               "attachments": [
@@ -66,8 +123,8 @@ jobs:
                              "short": true
                           },
                           {
-                             "title": "action",
-                             "value": `${process.env.AS_ACTION}`,
+                             "title": "workflow",
+                             "value": `${process.env.AS_WORKFLOW}`,
                              "short": true
                           },
                           {
@@ -76,14 +133,9 @@ jobs:
                              "short": true
                           },
                           {
-                             "title": "workflow",
-                             "value": `${process.env.AS_WORKFLOW}`,
-                             "short": true
-                          },
-                          {
                              "title": "additionalInfo",
                              "value": `${'${{ inputs.additionalInfo }}'}`,
-                             "short": false
+                             "short": true
                           },
                       ],
                       "footer": `@${process.env.AS_REF} / ${process.env.AS_COMMIT}`,
