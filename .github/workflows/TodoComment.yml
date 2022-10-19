@@ -28,3 +28,8 @@ jobs:
         run: |
             echo ${{ steps.find-issues.outputs.issues }}
             echo ${{ steps.find-issues.outputs.issues.length }}
+            echo "OPENED_ISSUE=$(echo ${{ steps.find-issues.outputs.issues.length }})" >> $GITHUB_ENV
+
+      - name: Print env
+        run: |
+          echo OPENED_ISSUE = ${{ env.OPENED_ISSUE }}
