@@ -27,8 +27,7 @@ jobs:
       - name: Print issues
         run: |
             echo ${{ steps.find-issues.outputs.issues }}
-            echo ${{ steps.find-issues.outputs.issues.length }}
-            echo "OPENED_ISSUE=$(echo ${{ steps.find-issues.outputs.issues.length }})" >> $GITHUB_ENV
+            echo "OPENED_ISSUE=$(echo ${{ steps.find-issues.outputs.issues }}) | jq '. | length" >> $GITHUB_ENV
 
       - name: Print env
         run: |
