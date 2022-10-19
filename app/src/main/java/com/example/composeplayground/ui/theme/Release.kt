@@ -1,5 +1,5 @@
 package com.example.composeplayground.ui.theme
 
 class Release {
-    // TODO [#54]: Implements Release
+    // 뭔가 수정했음
 }
