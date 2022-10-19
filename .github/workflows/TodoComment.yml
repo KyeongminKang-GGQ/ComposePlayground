@@ -17,8 +17,14 @@ jobs:
           TODO_ACTIONS_MONGO_URL: ${{ secrets.TODO_ACTIONS_MONGO_URL }}
 
       - name: Find issues
+        id: find-issues
         uses: actions-cool/issues-helper@v3
         with:
           actions: 'find-issues'
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-state: 'open'
+
+      - name: Print issues
+        run: |
+            echo ${{ steps.find-issues.outputs.issues }}
+            echo ${{ steps.find-issues.outputs.issues.length }}
