@@ -28,8 +28,6 @@ jobs:
 
       - name: Print issues
         run: |
-            echo '[{"username":"user1"},{"username":"user2"}]' | jq '. | length'
-            echo '${{ steps.find-issues.outputs.issues }}' | jq '. | length'
             echo "OPENED_ISSUE=$(echo '${{ steps.find-issues.outputs.issues }}' | jq '. | length')" >> $GITHUB_ENV
 
       - name: Print env
@@ -37,7 +35,7 @@ jobs:
           echo OPENED_ISSUE = ${{ env.OPENED_ISSUE }}
           if '${{ env.OPENED_ISSUE > 0 }}'
           then
-            core.setFailed('Unresolved issue ${{ env.OPENED_ISSUE }}')
+            core.setFailed('Unresolved issue')
           fi
 
   NotifyToSlackToFail:
@@ -51,4 +49,4 @@ jobs:
       status: failure
       region: ap-northeast
       commit: commit
-      additionalInfo: Unresolved issue - ${{ needs.CheckTodoComments.outputs.OPENED_ISSUE }}
+      additionalInfo: Unresolved ${{ needs.CheckTodoComments.outputs.issues }} issues remain.

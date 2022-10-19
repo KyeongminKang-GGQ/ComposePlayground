@@ -34,11 +34,11 @@ jobs:
   NotifyToSlack:
     runs-on: ubuntu-latest
     steps:
-      - name: Send slack
+      - name: Send SetTag Result
         uses: 8398a7/action-slack@v3
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
-        if: always()
+        if: ${{ inputs.additionalInfo != '' && failure() }}
         with:
           status: custom
           fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
@@ -47,8 +47,8 @@ jobs:
               "attachments": [
                   {
                    "mrkdwn_in": ["text"],
-                      "color": '${{ inputs.status }}' === 'success' ? 'good' : '${{ inputs.status }}' === 'failure' ? 'danger' : 'warning',
-                      "pretext": `${'${{ inputs.status }}' === 'success' ? '✅' : '⛔'} *${{ env.server_name }} 배포 ${'${{ inputs.status }}' === 'success' ? '성공' : '실패'}*`,
+                      "color": 'warning',
+                      "pretext": `⛔ *${{ env.server_name }} has some errors*`,
                       "fields": [
                           {
                               "title": "repo",
@@ -61,13 +61,13 @@ jobs:
                               "short": true
                           },
                           {
-                             "title": "release commit",
-                             "value": `${'${{ inputs.commit }}'}`,
+                             "title": "commit",
+                             "value": `${process.env.AS_COMMIT}`,
                              "short": true
                           },
                           {
-                             "title": "environment",
-                             "value": `${'${{ inputs.environment }}'}`,
+                             "title": "action",
+                             "value": `${process.env.AS_ACTION}`,
                              "short": true
                           },
                           {
@@ -76,8 +76,8 @@ jobs:
                              "short": true
                           },
                           {
-                             "title": "region",
-                             "value": `${'${{ inputs.region }}'}`,
+                             "title": "workflow",
+                             "value": `${process.env.AS_WORKFLOW}`,
                              "short": true
                           },
                           {
