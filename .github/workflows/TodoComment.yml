@@ -16,7 +16,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TODO_ACTIONS_MONGO_URL: ${{ secrets.TODO_ACTIONS_MONGO_URL }}
 
-      - uses: kazupon/issue-count-action
+      - name: Find issues
+        uses: actions-cool/issues-helper@v3
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          state: open
+          actions: 'find-issues'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-state: 'open'
