@@ -1,7 +1,7 @@
 package com.example.composeplayground.ui.theme
 
 class Release {
-    // TODO: Add integration test for TodoActionsMain.
+    // TODO [$634fc75a44c3de0009e74686]: Add integration test for TodoActionsMain.
     //
     // Code that interface with external data have been separated into their own modules.
     // These includes:
