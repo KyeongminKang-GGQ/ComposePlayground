@@ -28,7 +28,9 @@ jobs:
 
       - name: Print issues
         run: |
-            echo "OPENED_ISSUE=$(echo "${{ steps.find-issues.outputs.issues }}" | jq '. | length)" >> $GITHUB_ENV
+            echo '[{"username":"user1"},{"username":"user2"}]' | jq '. | length'
+            echo '${{ steps.find-issues.outputs.issues }} | jq '. | length'
+            echo "OPENED_ISSUE=$(echo '${{ steps.find-issues.outputs.issues }} | jq '. | length')" >> $GITHUB_ENV
 
       - name: Print env
         run: |
