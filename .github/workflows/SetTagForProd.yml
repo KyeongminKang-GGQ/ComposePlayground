@@ -62,7 +62,7 @@ jobs:
 
   NotifyToSlackToFail:
     if: ${{ failure() }}
-    needs: ExtractVersion
+    needs: [ExtractVersion, CheckTodoComments]
     uses: ./.github/workflows/NotifyToSlack.yml
     secrets: inherit
     with:
