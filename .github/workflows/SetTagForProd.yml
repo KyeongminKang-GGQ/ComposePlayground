@@ -9,36 +9,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  CheckTodoComments:
-    outputs:
-      OPENED_ISSUE: ${{ env.OPENED_ISSUE }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-
-      - name: Find opened issues
-        id: find-issues
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'find-issues'
-          token: ${{ secrets.GITHUB_TOKEN }}
-          issue-state: 'open'
-
-      - name: Print opened issues
-        run: |
-          echo "OPENED_ISSUE=$(echo '${{ steps.find-issues.outputs.issues }}' | jq '. | length')" >> $GITHUB_ENV
-
-      - name: Check opened issue
-        run: |
-          echo OPENED_ISSUE = ${{ env.OPENED_ISSUE }}
-          if '${{ env.OPENED_ISSUE != '' && env.OPENED_ISSUE > 0 }}';
-          then
-            echo "Unresolved issues remain!"
-            exit 1
-          else
-            echo "There are no remaining issues"
-          fi
-
   # release/hotfix 브랜치에서 배포 버전 추출
   # hotfix 브랜치면 1.0.0+hotfix.yymmdd
   # release 브랜치면 1.0.0+yymmdd
@@ -65,6 +35,38 @@ jobs:
       - name: Print Version
         run: |
           echo ${{ steps.extract_version_name.outputs.version }}
+
+  CheckTodoComments:
+    needs: [ExtractVersion]
+    outputs:
+      OPENED_ISSUE: ${{ env.OPENED_ISSUE }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Find opened issues
+        id: find-issues
+        uses: KyeongminKang-GGQ/issues-helper@master
+        with:
+          actions: 'find-issues'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-state: 'open'
+          issue-milestone: ${{ needs.ExtractVersion.outputs.version }}
+
+      - name: Print opened issues
+        run: |
+          echo "OPENED_ISSUE=$(echo '${{ steps.find-issues.outputs.issues }}' | jq '. | length')" >> $GITHUB_ENV
+
+      - name: Check opened issue
+        run: |
+          echo OPENED_ISSUE = ${{ env.OPENED_ISSUE }}
+          if '${{ env.OPENED_ISSUE != '' && env.OPENED_ISSUE > 0 }}';
+          then
+            echo "Unresolved issues remain!"
+            exit 1
+          else
+            echo "There are no remaining issues"
+          fi
 
   NotifyToSlackToFail:
     if: ${{ failure() }}
