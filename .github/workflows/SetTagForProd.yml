@@ -46,7 +46,7 @@ jobs:
 
       - name: Find opened issues
         id: find-issues
-        uses: KyeongminKang-GGQ/issues-helper@master
+        uses: KyeongminKang-GGQ/issues-helper@main
         with:
           actions: 'find-issues'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -82,7 +82,7 @@ jobs:
   # release/hotfix -> main 브랜치로 merge 후 release/hotfix 브랜치 삭제 -> main 브랜치 태깅
   SetTagForProd:
     if: ${{ needs.ExtractVersion.outputs.version != '' }}
-    needs: ExtractVersion
+    needs: [ExtractVersion, CheckTodoComments]
     runs-on: ubuntu-latest
     steps:
       - name: Start SetTagForProd Workflow
