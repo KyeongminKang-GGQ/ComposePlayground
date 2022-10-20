@@ -1,9 +1,47 @@
 name: SetTagForProd
 
+# release/hotfix 브랜치에서 main으로 머지 후 PROD 환경 배포 전 Tag를 생성하기 위한 수동 Workflow
+# hotfix 브랜치면 1.0.0+hotfix.yymmdd
+# release 브랜치면 1.0.0+yymmdd
+# main에 Tag 생성 후 main에 생성된 Tag로 서버 배포를 진행한다.
+
 on:
   workflow_dispatch:
 
 jobs:
+  CheckTodoComments:
+    outputs:
+      OPENED_ISSUE: ${{ env.OPENED_ISSUE }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Find opened issues
+        id: find-issues
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'find-issues'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-state: 'open'
+
+      - name: Print opened issues
+        run: |
+          echo "OPENED_ISSUE=$(echo '${{ steps.find-issues.outputs.issues }}' | jq '. | length')" >> $GITHUB_ENV
+
+      - name: Check opened issue
+        run: |
+          echo OPENED_ISSUE = ${{ env.OPENED_ISSUE }}
+          if '${{ env.OPENED_ISSUE != '' && env.OPENED_ISSUE > 0 }}';
+          then
+            echo "Unresolved issues remain!"
+            exit 1
+          else
+            echo "There are no remaining issues"
+          fi
+
+  # release/hotfix 브랜치에서 배포 버전 추출
+  # hotfix 브랜치면 1.0.0+hotfix.yymmdd
+  # release 브랜치면 1.0.0+yymmdd
   ExtractVersion:
     if: ${{ startsWith(github.ref_name, 'release/') || startsWith(github.ref_name, 'hotfix/') }}
     runs-on: ubuntu-latest
@@ -28,6 +66,18 @@ jobs:
         run: |
           echo ${{ steps.extract_version_name.outputs.version }}
 
+  NotifyToSlackToFail:
+    if: ${{ failure() }}
+    needs: [ExtractVersion, CheckTodoComments]
+    uses: ./.github/workflows/NotifyToSlack.yml
+    secrets: inherit
+    with:
+      environment: ${{ inputs.environment }}
+      version: ${{ needs.ExtractVersion.outputs.version }}
+      status: failure
+      additionalInfo: Unresolved ${{ needs.CheckTodoComments.outputs.OPENED_ISSUE }} issues remain.
+
+  # release/hotfix -> main 브랜치로 merge 후 release/hotfix 브랜치 삭제 -> main 브랜치 태깅
   SetTagForProd:
     if: ${{ needs.ExtractVersion.outputs.version != '' }}
     needs: ExtractVersion
@@ -44,6 +94,7 @@ jobs:
           git config --local user.email "actions@github.com"
           git config --local user.name "Github Actions"
 
+      # release/hotfix -> main 브랜치로 merge -> main 브랜치에 버전 태깅
       - name: Merge to main
         run: |
           git fetch --unshallow
@@ -54,6 +105,7 @@ jobs:
           git tag ${{ needs.ExtractVersion.outputs.version }}
           git push origin ${{ needs.ExtractVersion.outputs.version }}
 
+      # github release 등록
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -63,6 +115,7 @@ jobs:
           tag_name: ${{ needs.ExtractVersion.outputs.version }}
           release_name: ${{ needs.ExtractVersion.outputs.version }}
 
+      # release/hotfix 브랜치 삭제
       - name: Delete branch
         uses: dawidd6/action-delete-branch@v3
         with:

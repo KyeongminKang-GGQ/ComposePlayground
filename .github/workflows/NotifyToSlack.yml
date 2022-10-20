@@ -1,7 +1,12 @@
 name: NotifyToSlack
 
+# Slack으로 배포 성공/실패를 알려주는 Workflow
+# NotifyToSlack Workflow는 다른 Workflow 에서 호출한다
+# NotifyToSlack Workflow 호출 시 secrets, inputs 를 넘겨주어야 한다.
+# env의 서버의 이름을 변경하여 사용하도록 한다.
+
 env:
-  server_name: Auth Server
+  server_name: Test Server
 
 on:
   workflow_call:
@@ -11,29 +16,32 @@ on:
         required: true
       environment:
         type: string
-        required: true
+        required: false
       status:
         type: string
         required: true
       region:
         type: string
-        required: true
+        required: false
       commit:
+        type: string
+        required: false
+      additionalInfo:
         type: string
         required: false
 
 jobs:
-  NotifyToSlack:
+  NotifyDeployResult:
     runs-on: ubuntu-latest
     steps:
-      - name: Send slack
+      - name: Send Deploy Result
         uses: 8398a7/action-slack@v3
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
-        if: always()
+        if: ${{ inputs.additionalInfo == '' && always() }}
         with:
           status: custom
-          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+          fields: all
           custom_payload: |
             {
               "attachments": [
@@ -70,6 +78,63 @@ jobs:
                           {
                              "title": "region",
                              "value": `${'${{ inputs.region }}'}`,
+                             "short": true
+                          },
+                      ],
+                      "footer": `@${process.env.AS_REF} / ${process.env.AS_COMMIT}`,
+                      "footer_icon": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+                  }
+              ]
+            }
+          author_name: GGQ bot
+
+  NotifyTaggingResult:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Tagging Result
+        uses: 8398a7/action-slack@v3
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
+        if: ${{ inputs.additionalInfo != '' && inputs.status == 'failure' }}
+        with:
+          status: custom
+          fields: all
+          custom_payload: |
+            {
+              "attachments": [
+                  {
+                   "mrkdwn_in": ["text"],
+                      "color": 'warning',
+                      "pretext": `⛔ *${{ env.server_name }} has some errors*`,
+                      "fields": [
+                          {
+                              "title": "repo",
+                              "value": `${process.env.AS_REPO}`,
+                              "short": true
+                          },
+                          {
+                              "title": "version",
+                              "value": `${'${{ inputs.version }}'}`,
+                              "short": true
+                          },
+                          {
+                             "title": "commit",
+                             "value": `${process.env.AS_COMMIT}`,
+                             "short": true
+                          },
+                          {
+                             "title": "workflow",
+                             "value": `${process.env.AS_WORKFLOW}`,
+                             "short": true
+                          },
+                          {
+                             "title": "author",
+                             "value": `${process.env.AS_AUTHOR}`,
+                             "short": true
+                          },
+                          {
+                             "title": "additionalInfo",
+                             "value": `${'${{ inputs.additionalInfo }}'}`,
                              "short": true
                           },
                       ],
