@@ -26,17 +26,17 @@ jobs:
 
       - name: Print opened issues
         run: |
-          if '${{ steps.find-issues.outputs.issues }} != []'
+          echo "OPENED_ISSUE=$(echo '${{ steps.find-issues.outputs.issues }}' | jq '. | length')" >> $GITHUB_ENV
+
+      - name: Check opened issue
+        run: |
+          echo OPENED_ISSUE = ${{ env.OPENED_ISSUE }}
+          if '${{ env.OPENED_ISSUE != '' && env.OPENED_ISSUE > 0 }}';
           then
-            echo "OPENED_ISSUE=$(echo '${{ steps.find-issues.outputs.issues }}' | jq '. | length')" >> $GITHUB_ENV
-            echo OPENED_ISSUE = ${{ env.OPENED_ISSUE }}
-            if '${{ env.OPENED_ISSUE > 0 }}'
-            then
-              echo Unresolved issues remain
-              core.setFailed('Unresolved issues remain')
-            else
-              echo There are no remaining issues
-            fi
+            echo "Unresolved issues remain!"
+            exit 1
+          else
+            echo "There are no remaining issues"
           fi
 
   # release/hotfix 브랜치에서 배포 버전 추출
