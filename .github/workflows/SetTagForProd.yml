@@ -31,9 +31,10 @@ jobs:
       - name: Check opened issue
         run: |
           echo OPENED_ISSUE = ${{ env.OPENED_ISSUE }}
-          if '${{ env.OPENED_ISSUE != '' && env.OPENED_ISSUE > 0 }}'
+          if '${{ env.OPENED_ISSUE != '' && env.OPENED_ISSUE > 0 }}';
           then
-            core.setFailed('Unresolved issues remain')
+            echo "Unresolved issues remain!"
+            exit 1
           else
             echo "There are no remaining issues"
           fi
