@@ -13,5 +13,5 @@ class Release {
     // They can be mocked by creating a mock version using `__mocks__` folder.
     // https://jestjs.io/docs/en/manual-mocks
 
-    // TODO [$635139c1247abd000888c4d3]: Test issue-helper is latest
+    // TODO [#69]: Test issue-helper is latest
 }
