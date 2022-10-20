@@ -4,14 +4,43 @@ on:
   push:
     branches:
       - "release/**"
+      - "hotfix/**"
 
 jobs:
+  # release/hotfix 브랜치에서 배포 버전 추출
+  # hotfix 브랜치면 1.0.0+hotfix.yymmdd
+  # release 브랜치면 1.0.0+yymmdd
+  ExtractVersion:
+    if: ${{ startsWith(github.ref_name, 'release/') || startsWith(github.ref_name, 'hotfix/') }}
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ env.VERSION }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Extract Version Name
+        run: |
+          if '${{ startsWith(github.ref_name, 'hotfix/') }}'
+          then
+            echo "VERSION=$(echo '${{ github.ref_name }}' | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')+hotfix.$(echo '${{ github.ref_name }}' | egrep -o '[0-9]{6}')" >> $GITHUB_ENV
+          elif '${{ startsWith(github.ref_name, 'release/') }}'
+          then
+            echo "VERSION=$(echo '${{ github.ref_name }}' | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\+[0-9]{6}')" >> $GITHUB_ENV
+          else
+            echo ""
+          fi
+
+      - name: Print Version
+        run: |
+          echo ${{ env.VERSION }}
+
   CreateIssuesFromTodos:
     runs-on: ubuntu-latest
+    needs: [ExtractVersion]
     steps:
       - uses: actions/checkout@v1
       - name: todo-actions
-        uses: dtinth/todo-actions@master
+        uses: KyeongminKang-GGQ/todo-actions@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TODO_ACTIONS_MONGO_URL: ${{ secrets.TODO_ACTIONS_MONGO_URL }}
+          MILESTONE: ${{ needs.ExtractVersion.outputs.version }}
