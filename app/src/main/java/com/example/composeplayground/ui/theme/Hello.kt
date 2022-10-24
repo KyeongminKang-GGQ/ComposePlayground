@@ -6,4 +6,16 @@ class Hello {
      *
      * This is a body
      */
+
+    /**
+     * FIXME: [FIXME2] Implements Hello.kt
+     *
+     * This is a body
+     */
+
+    /**
+     * TODO: [TODO2] Implements Hello.kt
+     *
+     * This is a body
+     */
 }
