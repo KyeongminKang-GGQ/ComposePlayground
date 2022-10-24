@@ -5,6 +5,7 @@ on:
     branches:
       - "release/**"
       - "hotfix/**"
+      - "develop"
 
 jobs:
   # release/hotfix 브랜치에서 배포 버전 추출
