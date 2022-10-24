@@ -9,4 +9,6 @@ class Welcome {
     // - and Unit Test for `WelcomeWorker.kt`
     //
     // Please implements it until v2.1.1
+
+    // Whatever something is changed
 }
