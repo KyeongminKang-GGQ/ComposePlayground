@@ -12,7 +12,6 @@ jobs:
   # hotfix 브랜치면 1.0.0+hotfix.yymmdd
   # release 브랜치면 1.0.0+yymmdd
   ExtractVersion:
-    if: ${{ startsWith(github.ref_name, 'release/') || startsWith(github.ref_name, 'hotfix/') }}
     runs-on: ubuntu-latest
     outputs:
       version: ${{ env.VERSION }}
@@ -32,7 +31,7 @@ jobs:
 
       - name: Print Version
         run: |
-          echo ${{ env.VERSION }}
+          echo VERSION = ${{ env.VERSION }}
 
   CreateIssuesFromTodos:
     runs-on: ubuntu-latest
