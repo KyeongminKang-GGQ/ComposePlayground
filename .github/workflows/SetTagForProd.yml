@@ -36,53 +36,21 @@ jobs:
         run: |
           echo ${{ steps.extract_version_name.outputs.version }}
 
-  CheckTodoComments:
-    needs: [ExtractVersion]
-    outputs:
-      OPENED_ISSUE: ${{ env.OPENED_ISSUE }}
+  ReportIssue:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-
-      - name: Find opened issues
-        id: find-issues
-        uses: KyeongminKang-GGQ/issues-helper@main
+      - name: Send Issue Result
+        uses: KyeongminKang-GGQ/action-slack@v2
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
         with:
-          actions: 'find-issues'
-          token: ${{ secrets.GITHUB_TOKEN }}
-          issue-state: 'open'
-          issue-milestone: ${{ needs.ExtractVersion.outputs.version }}
-
-      - name: Print opened issues
-        run: |
-          echo "OPENED_ISSUE=$(echo '${{ steps.find-issues.outputs.issues }}' | jq '. | length')" >> $GITHUB_ENV
-
-      - name: Check opened issue
-        run: |
-          echo OPENED_ISSUE = ${{ env.OPENED_ISSUE }}
-          if '${{ env.OPENED_ISSUE != '' && env.OPENED_ISSUE > 0 }}';
-          then
-            echo "Unresolved issues remain!"
-            exit 1
-          else
-            echo "There are no remaining issues"
-          fi
-
-  NotifyToSlackToFail:
-    if: ${{ failure() }}
-    needs: [ExtractVersion, CheckTodoComments]
-    uses: ./.github/workflows/NotifyToSlack.yml
-    secrets: inherit
-    with:
-      environment: ${{ inputs.environment }}
-      version: ${{ needs.ExtractVersion.outputs.version }}
-      status: failure
-      additionalInfo: Unresolved ${{ needs.CheckTodoComments.outputs.OPENED_ISSUE }} issues remain.
+          status: report-issue
+          fields: all
 
   # release/hotfix -> main 브랜치로 merge 후 release/hotfix 브랜치 삭제 -> main 브랜치 태깅
   SetTagForProd:
     if: ${{ needs.ExtractVersion.outputs.version != '' }}
-    needs: [ExtractVersion, CheckTodoComments]
+    needs: [ExtractVersion, ReportIssue]
     runs-on: ubuntu-latest
     steps:
       - name: Start SetTagForProd Workflow
