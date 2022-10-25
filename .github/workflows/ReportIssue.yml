@@ -12,9 +12,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Send Issue Result
+        id: get_issue
         uses: KyeongminKang-GGQ/action-slack@v2
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
         with:
           status: report-issue
           fields: all
+
+      - name: Print
+        run: |
+          echo ISSUES = ${{ steps.get_issue.outputs.issues }}
+        
