@@ -1,0 +1,54 @@
+name: ReportIssue
+
+#on:
+#  schedule:
+#    - cron: 0 * * * *
+
+on:
+  workflow_dispatch:
+
+jobs:
+  CheckTodoComments:
+    outputs:
+      OPENED_ISSUE: ${{ env.OPENED_ISSUE }}
+      ISSUES: ${{ steps.find-issues.outputs.issues }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Find opened issues
+        id: find-issues
+        uses: KyeongminKang-GGQ/issues-helper@main
+        with:
+          actions: 'find-issues'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-state: 'open'
+
+      - name: Print opened issues
+        run: |
+          echo "OPENED_ISSUE=$(echo '${{ steps.find-issues.outputs.issues }}' | jq '. | length')" >> $GITHUB_ENV
+
+      - name: Check opened issue
+        run: |
+          echo OPENED_ISSUE = ${{ env.OPENED_ISSUE }}
+          if '${{ env.OPENED_ISSUE != '' && env.OPENED_ISSUE > 0 }}';
+          then
+            echo "Unresolved issues remain!"
+            exit 1
+          else
+            echo "There are no remaining issues"
+          fi
+
+  NotifyToSlackToFail:
+    if: ${{ failure() }}
+    needs: [CheckTodoComments]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Deploy Result
+        uses: KyeongminKang-GGQ/action-slack@master
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
+        with:
+          status: report-issue
+          fields: all
+          issues: ${{ needs.CheckTodoComments.outputs.ISSUES }}
