@@ -23,4 +23,3 @@ jobs:
       - name: Print
         run: |
           echo ISSUES = ${{ steps.get_issue.outputs.issues }}
-        
