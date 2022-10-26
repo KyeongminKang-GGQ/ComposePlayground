@@ -33,7 +33,7 @@ jobs:
 
       - name: Print Version
         run: |
-          echo ${{ env.VERSION }}
+          echo VERSION = ${{ env.VERSION }}
 
   ReportIssue:
     needs: [ExtractVersion]
