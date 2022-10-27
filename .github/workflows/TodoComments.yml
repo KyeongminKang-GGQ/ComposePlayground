@@ -11,7 +11,7 @@ jobs:
           fetch-depth: 0
 
       - name: Create Todo Comments
-        uses: KyeongminKang-GGQ/github-action-todo-commenter@v2
+        uses: Z9MIA/action-slack@develop
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           ignore-pattern: '.js$|.snap$'
