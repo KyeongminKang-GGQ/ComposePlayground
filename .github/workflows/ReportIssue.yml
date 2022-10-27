@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: Send Issue Result
         id: get_issue
-        uses: KyeongminKang-GGQ/action-slack@v3
+        uses: ggqcompany/github-actions-slack@v1
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
         with:
