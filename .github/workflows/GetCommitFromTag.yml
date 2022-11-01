@@ -27,7 +27,7 @@ jobs:
 
       - name: Get commit
         run: |
-          echo "COMMIT=$(git rev-list ${{ inputs.tag }})" >> $GITHUB_ENV
+          echo "COMMIT=git rev-list ${{ inputs.tag }}" >> $GITHUB_ENV
 
       - name: Print commit
         run: |
