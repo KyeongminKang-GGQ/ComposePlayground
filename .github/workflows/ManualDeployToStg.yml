@@ -1,0 +1,43 @@
+name: ManualDeployToStg
+
+# release/hotfix 브랜치에서 가장 최근의 rc 버전 TAG로 AWS 배포 하는 Workflow
+# BuildAndDeployToStg job에서 container, cluster, service_prefix 를 변경하여 사용하도록 한다.
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        required: true
+        description: 배포 환경 (수정 불가)
+        options:
+          - STG
+      region:
+        type: choice
+        required: true
+        description: 배포할 AWS region를 선택하세요.
+        options:
+          - ap-northeast-2
+
+jobs:
+  # release/hotfix 브랜치에서 발행된 최신의 rc 태깅을 찾는다.
+  GetLatestTag:
+    if: ${{ startsWith(github.ref_name, 'release/') || startsWith(github.ref_name, 'hotfix/') }}
+    uses: ./.github/workflows/GetLatestTag.yml
+    with:
+      environment: ${{ inputs.environment }}
+
+  # tag이름으로 배포할 commit 확인
+  GetCommitFromTag:
+    if: ${{ startsWith(github.ref_name, 'release/') || startsWith(github.ref_name, 'hotfix/') }}
+    uses: ./.github/workflows/GetCommitFromTag.yml
+    needs: GetLatestTag
+    with:
+      tag: ${{ needs.GetLatestTag.outputs.tag }}
+
+  # 배포 시 필요한 값 가져오기
+  GetAwsValue:
+    uses: ./.github/workflows/GetAwsValue.yml
+    with:
+      environment: ${{ inputs.environment }}
+      region: ${{ inputs.region }}

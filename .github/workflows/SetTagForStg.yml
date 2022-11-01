@@ -23,7 +23,7 @@ jobs:
     needs: GetLatestRcTag
     runs-on: ubuntu-latest
     outputs:
-      tag: ${{ steps.extract_new_tag.outputs.tag }}
+      tag: ${{ env.TAG }}
     steps:
       - uses: actions/checkout@v2
         with:
