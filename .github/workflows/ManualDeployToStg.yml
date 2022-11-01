@@ -34,10 +34,3 @@ jobs:
     needs: GetLatestTag
     with:
       tag: ${{ needs.GetLatestTag.outputs.tag }}
-
-  # 배포 시 필요한 값 가져오기
-  GetAwsValue:
-    uses: ./.github/workflows/GetAwsValue.yml
-    with:
-      environment: ${{ inputs.environment }}
-      region: ${{ inputs.region }}
